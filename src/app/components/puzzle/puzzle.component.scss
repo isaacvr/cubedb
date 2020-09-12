@@ -1,0 +1,21 @@
+:host {
+  display: inline-block;
+}
+
+img {
+  width: 100%;
+}
+
+@keyframes rot {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading {
+  animation: rot 6s linear infinite;
+  margin-top: 60px;
+}
