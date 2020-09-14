@@ -1,9 +1,11 @@
+import { LOADING_IMG } from './../../constants/constants';
 import { Puzzle } from '../../classes/puzzle/puzzle';
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, HostListener } from '@angular/core';
 import { DataService } from '../../services/data.service';
 import { Card, Algorithm } from '../../interfaces/interfaces';
-import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { generateCubeBundle } from '../../cube-drawer';
 
 function nameToPuzzle(name: string) {
   const reg1 = /^(\d*)[xX](\d*)$/;
@@ -80,14 +82,11 @@ export class AlgorithmsComponent implements OnDestroy {
       this.selectedCase = null;
       this.lastUrl = '';
 
-      // console.log('Subscribing...');
       this.algSubs = this.algorithms.algSub.subscribe((algs: Algorithm[]) => {
-        // console.log('LLEGARON LAS LLEGUAS');
         this.handleAlgorithms(algs);
       });
 
       this.eventSubs = this.router.events.subscribe((event) => {
-        // console.log('EVENT: ', event instanceof NavigationEnd, event);
         if ( event instanceof NavigationEnd ) {
           let url = this.router.parseUrl( event.url );
           let segments;
@@ -98,8 +97,6 @@ export class AlgorithmsComponent implements OnDestroy {
             segments = url.root.children.primary.segments.map(e => e.path);
             segments.shift();
           }
-
-          // console.log('SEGMENTS: ', segments, url);
 
           let newUrl = segments.join('/');
 
@@ -123,8 +120,6 @@ export class AlgorithmsComponent implements OnDestroy {
           this.cards.length = 0;
           this.cases.length = 0;
 
-          // console.log('getAlgorithms', newUrl, Date.now());
-
           this.algorithms.getAlgorithms(newUrl);    
 
         }
@@ -132,18 +127,25 @@ export class AlgorithmsComponent implements OnDestroy {
       });
   }
 
+  @HostListener('window:keyup', ['$event'])
+  keyEvent(event: KeyboardEvent) {
+    if ( event.code === 'Escape' ) {
+      if ( this.type === 3 ) {
+        let dir = this.router.url.split('?');
+        this.router.navigateByUrl(dir[0]);
+      }
+    }
+  }
+
   ngOnDestroy() {
-    // console.log('Unsubscribe');
     this.algSubs.unsubscribe();
     this.eventSubs.unsubscribe();
   }
 
-  escape() {
-    console.log('ESC pressed');
-  }
-
   handleAlgorithms(list: Algorithm[]) {
     this.type = 0;
+    this.cards.length = 0;
+    this.cases.length = 0;
 
     if ( list.length > 0 ) {
       let hasSolutions = false;
@@ -165,7 +167,6 @@ export class AlgorithmsComponent implements OnDestroy {
         }
         this.type = 2;
       } else {
-        // console.log('List does not have property "solutions"');
       }
     }
 
@@ -188,29 +189,50 @@ export class AlgorithmsComponent implements OnDestroy {
 
     console.log('SORTED LIST', list);
 
-    for (let i = 0, maxi = list.length; i < maxi; i += 1) {
-      let e = list[i];
+    let cubes = list.map(e => {
       let args = nameToPuzzle(e.puzzle);
-
-      let cube = Puzzle.fromSequence(e.scramble, {
+      let seq = e.hasOwnProperty('solutions') ? e.solutions[0].moves : e.scramble;
+      return Puzzle.fromSequence(seq, {
         type: args[0],
         order: args.slice(1, args.length),
         mode: e.mode,
         view: e.view,
         tips: e.tips
       }, true);
+    });
 
+    for (let i = 0, maxi = list.length; i < maxi; i += 1) {
+      let e = list[i];
       if ( this.type < 2 ) {
         this.cards.push({
           title: e.name,
-          cube,
+          cube: LOADING_IMG,
           route: '/algorithms/' + e.parentPath + '/' + e.shortName
         });
       } else {
-        e.cube = cube;
+        e.cube = LOADING_IMG;
         e.parentPath = '/algorithms/' + e.parentPath;
         this.cases.push(e);
       }
     }
+
+    let obs = generateCubeBundle(cubes);
+
+    setTimeout(() => {
+      let idx = 0;
+      obs.subscribe({
+        next: (img) => {
+          if ( this.type < 2 ) {
+            // console.log(idx, 'of', this.cards.length);
+            this.cards[idx].cube = img;
+          } else {
+            // console.log(idx, 'of', this.cases.length);
+            this.cases[idx].cube = img;
+          }
+
+          idx += 1;
+        }
+      });
+    }, 10);
   }
 }

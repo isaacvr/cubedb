@@ -1,8 +1,8 @@
 import { CubeView } from '../../types';
 import { Component, AfterViewInit, Input, ElementRef, ViewChild } from '@angular/core';
 import { Puzzle } from '../../classes/puzzle/puzzle';
-import * as THREE from 'three';
 import { LOADING_IMG } from '../../constants/constants';
+import * as THREE from 'three/src/Three';
 
 @Component({
   selector: 'app-puzzle',
@@ -26,7 +26,6 @@ export class PuzzleComponent implements AfterViewInit {
     this.img = null;
     this.notReady = true;
     this.loadingImg = LOADING_IMG;
-
   }
 
   ngAfterViewInit() {
@@ -35,7 +34,7 @@ export class PuzzleComponent implements AfterViewInit {
 
     if ( this.puzzle ) {
       setTimeout(() => {
-        this.generateCubeThree(this.puzzle);
+        // this.generateCube(this.puzzle);
       }, 0);
     }
   }
@@ -43,14 +42,13 @@ export class PuzzleComponent implements AfterViewInit {
   ngOnChanges() { 
     if ( this.puzzle && this.img ) {
       setTimeout(() => {
-        this.generateCubeThree(this.puzzle);
+        // this.generateCube(this.puzzle);
       }, 0);
     }
   }
 
-  generateCubeThree(cube: Puzzle) {
+  generateCube(cube: Puzzle) {
     const W = 200;
-
     let renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
@@ -137,9 +135,9 @@ export class PuzzleComponent implements AfterViewInit {
 
     scene.add(group);
 
-    group.rotation.x = this.puzzle.rotation.x;
-    group.rotation.y = this.puzzle.rotation.y;
-    group.rotation.z = this.puzzle.rotation.z;
+    group.rotation.x = cube.rotation.x;
+    group.rotation.y = cube.rotation.y;
+    group.rotation.z = cube.rotation.z;
 
     // let render = () => {
     //   requestAnimationFrame(render);

@@ -41,6 +41,7 @@ export function assignColors(p: PuzzleInterface, cols ?: string[]) {
     }
 
     if ( (dirs[0] > 0 && dirs[2] > 0) ) {
+      sticker.oColor = 'x';
       sticker.color = 'x';
       // console.log('STICKER COLOR: X1', sticker);
     } else if ( dirs[0] > 0 ) {
@@ -48,12 +49,14 @@ export function assignColors(p: PuzzleInterface, cols ?: string[]) {
       for (let j = 0; j < 6; j += 1) {
         if ( v.sub( p.faceVectors[j] ).abs() < 1e-6 ) {
           sticker.color = colors[j];
+          sticker.oColor = colors[j];
           break;
         }
       }
       // console.log('STICKER COLOR: ', sticker.color, sticker);
     } else {
       // console.log('STICKER COLOR: X2', sticker);
+      sticker.oColor = 'x';
       sticker.color = 'x';
     }
   }

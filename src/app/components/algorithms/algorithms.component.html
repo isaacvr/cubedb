@@ -1,17 +1,12 @@
 <div class="container">
-  <div class="image-placeholder" [class.show]="type != 3">
-    <app-puzzle
-    [cube]="selectedCase?.cube"
-    [view]="selectedCase?.view"></app-puzzle>
-
+  <div class="image-placeholder" [class.nshow]="type != 3">
+    <img [src]="selectedCase?.cube" class="puzzle-img" alt="">
     <span>{{selectedCase?.name}}</span>
   </div>
-  <ul class="card-container" [class.show]="type >= 2">
+  <ul class="card-container" [class.nshow]="type >= 2">
     <mat-card *ngFor="let card of cards" class="card" [routerLink]="card.route">
       <mat-card-content>
-        <app-puzzle
-          [cube]="card.cube"
-          [view]="card.view"></app-puzzle>
+        <img [src]="card.cube" class="puzzle-img" alt="">
         <img *ngIf="card.timer" src="./assets/timer.svg" class="timer">
       </mat-card-content> 
       <mat-card-footer>{{card.title}}</mat-card-footer>
@@ -28,9 +23,7 @@
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let element">
         <a class="case" [routerLink]="element.parentPath" [queryParams]="{ case: element.shortName }">
-          <app-puzzle
-            [cube]="element.cube"
-            [view]="element.view"></app-puzzle>
+          <img [src]="element.cube" class="puzzle-img" alt="">
         </a>
       </td>
     </ng-container>
@@ -50,7 +43,7 @@
     </tr>
   </table>
 
-  <table [class.show]="type != 3" mat-table [dataSource]="selectedCase?.solutions" 
+  <table [class.nshow]="type != 3" mat-table [dataSource]="selectedCase?.solutions" 
     multiTemplateDataRows class="mat-elevation-z8 algorithm-container">
     <ng-container matColumnDef="case">
       <th mat-header-cell *matHeaderCellDef>Solution</th>
@@ -63,8 +56,8 @@
     </ng-container>
 
     <ng-container matColumnDef="algorithms">
-      <th mat-header-cell *matHeaderCellDef>Votes</th>
-      <td mat-cell *matCellDef="let element">{{element.votes}}</td>
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let element"></td>
     </ng-container>
 
     <tr mat-header-row *matHeaderRowDef="columns"></tr>

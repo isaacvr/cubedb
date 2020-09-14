@@ -1,23 +1,21 @@
 @import "../../../styleVariables.scss";
 
 .navbar {
-  margin-top: 10px;
-  // box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.3);
+  margin-top: 40px;
   padding: 0px;
   width: calc(100% - #{ $margin-left * 2 });
   margin-left: $margin-left;
   border-radius: 3px;
-  background: rgba(255, 255, 255, 0.2);
   display: inline-flex;
 
   .navbar-item {
     padding: 15px;
-    border: 1px solid #979292;
     margin-right: 5px;
     border-radius: 6px;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 9px 15px rgba(0, 0, 0, 0.3);
     text-decoration: none;
     color: black;
     text-transform: uppercase;
+    background-color: rgba(255, 255, 255, 0.4);
   }
 }

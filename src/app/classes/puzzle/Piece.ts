@@ -5,7 +5,7 @@ export class Piece {
   stickers: Sticker[];
   
   constructor(stickers?: Sticker[]) {
-    this.stickers = (stickers || []).map(e => e.copy());
+    this.stickers = (stickers || []).map(e => e.clone());
   }
 
   get length(): number {
@@ -92,5 +92,9 @@ export class Piece {
     }
 
     return false;
+  }
+
+  clone() {
+    return new Piece( this.stickers );
   }
 }

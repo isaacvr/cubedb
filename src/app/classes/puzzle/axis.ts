@@ -48,46 +48,46 @@ export function AXIS(): PuzzleInterface {
     .rotate(CENTER, FRONT, PI_2)
 
   let DEF = new Sticker([
-    F.copy(),
-    D.copy(),
-    E.copy(),
+    F.clone(),
+    D.clone(),
+    E.clone(),
   ]);
 
   let BEF = new Sticker([
-    F.copy(),
-    E.copy(),
-    B.copy(),
+    F.clone(),
+    E.clone(),
+    B.clone(),
   ]);
 
   let BCE = new Sticker([
-    B.copy(),
-    E.copy(),
-    C.copy(),
+    B.clone(),
+    E.clone(),
+    C.clone(),
   ]);
 
   let ACDE = new Sticker([
-    E.copy(),
-    D.copy(),
-    A.copy(),
-    C.copy(),
+    E.clone(),
+    D.clone(),
+    A.clone(),
+    C.clone(),
   ]);
 
   let BCH = new Sticker([
-    B.copy(),
-    C.copy(),
-    H.copy(),
+    B.clone(),
+    C.clone(),
+    H.clone(),
   ]);
 
   let ADG = new Sticker([
-    D.copy(),
-    G.copy(),
-    A.copy(),
+    D.clone(),
+    G.clone(),
+    A.clone(),
   ]);
 
   let ACH = new Sticker([
-    C.copy(),
-    A.copy(),
-    H.copy(),
+    C.clone(),
+    A.clone(),
+    H.clone(),
   ]);
 
   let cornerBig = new Piece([
@@ -99,9 +99,9 @@ export function AXIS(): PuzzleInterface {
       .rotate(CENTER, UP, PI_2)
       .rotate(CENTER, FRONT, PI_2),
     new Sticker([
-      A.copy(),
+      A.clone(),
       A.rotate(G, BACK, PI_2),
-      D.copy(),
+      D.clone(),
     ])
   ]);
 
@@ -124,85 +124,85 @@ export function AXIS(): PuzzleInterface {
       .rotate(CENTER, UP, PI_2)
       .rotate(CENTER, FRONT, PI_2),
     new Sticker([
-      F.copy(),
-      E.copy(),
-      EH.copy(),
-      FH.copy(),
+      F.clone(),
+      E.clone(),
+      EH.clone(),
+      FH.clone(),
     ]),
     new Sticker([
-      E.copy(),
-      D.copy(),
-      DH.copy(),
-      EH.copy(),
+      E.clone(),
+      D.clone(),
+      DH.clone(),
+      EH.clone(),
     ]),
     new Sticker([
-      D.copy(),
-      E1.copy(),
-      EH1.copy(),
-      DH.copy(),
+      D.clone(),
+      E1.clone(),
+      EH1.clone(),
+      DH.clone(),
     ]),
     new Sticker([
-      E1.copy(),
-      F.copy(),
-      FH.copy(),
-      EH1.copy(),
+      E1.clone(),
+      F.clone(),
+      FH.clone(),
+      EH1.clone(),
     ]),
   ]);
 
   let edgeSmall = new Piece([
     ACDE,
     new Sticker([
-      E.copy(),
-      D.copy(),
-      DH.copy(),
-      EH.copy(),
+      E.clone(),
+      D.clone(),
+      DH.clone(),
+      EH.clone(),
     ]),
     new Sticker([
-      E.copy(),
-      C.copy(),
-      CH.copy(),
-      EH.copy(),
+      E.clone(),
+      C.clone(),
+      CH.clone(),
+      EH.clone(),
     ]),
     new Sticker([
-      C.copy(),
-      A.copy(),
-      AH.copy(),
-      CH.copy(),
+      C.clone(),
+      A.clone(),
+      AH.clone(),
+      CH.clone(),
     ]),
     new Sticker([
-      A.copy(),
-      D.copy(),
-      DH.copy(),
-      AH.copy(),
+      A.clone(),
+      D.clone(),
+      DH.clone(),
+      AH.clone(),
     ]),
   ]);
 
   let cornerSmall = new Piece([
     BCE,
     new Sticker([
-      B.copy(),
-      EH.copy(),
-      E.copy(),
+      B.clone(),
+      EH.clone(),
+      E.clone(),
     ]),
     new Sticker([
-      C.copy(),
-      E.copy(),
-      EH.copy(),
-      CH.copy(),
+      C.clone(),
+      E.clone(),
+      EH.clone(),
+      CH.clone(),
     ]),
     new Sticker([
-      B.copy(),
-      C.copy(),
-      CH.copy(),
+      B.clone(),
+      C.clone(),
+      CH.clone(),
     ]),
   ]);
 
   let edge1 = new Piece([
     BCH,
     new Sticker([
-      C.copy(),
-      B.copy(),
-      CH.copy()
+      C.clone(),
+      B.clone(),
+      CH.clone()
     ]),
     centerPiece.stickers[5].rotate(G, G, -PI * 2 / 3),
   ]);
@@ -230,12 +230,12 @@ export function AXIS(): PuzzleInterface {
   }
 
   axis.moves = {
-    "U": { plane: axis.pieces[2].stickers[3].points.map(e => e.copy()).reverse(), angle: -90 },
-    "R": { plane: axis.pieces[1].stickers[2].points.map(e => e.copy()), angle: -90 },
-    "F": { plane: axis.pieces[1].stickers[3].points.map(e => e.copy()), angle: -90 },
-    "D": { plane: axis.pieces[6].stickers[2].points.map(e => e.copy()), angle: -90 },
-    "L": { plane: axis.pieces[1].stickers[4].points.map(e => e.copy()), angle: -90 },
-    "B": { plane: axis.pieces[1].stickers[5].points.map(e => e.copy()), angle: -90 },
+    "U": { plane: axis.pieces[2].stickers[3].points.map(e => e.clone()).reverse(), angle: -90 },
+    "R": { plane: axis.pieces[1].stickers[2].points.map(e => e.clone()), angle: -90 },
+    "F": { plane: axis.pieces[1].stickers[3].points.map(e => e.clone()), angle: -90 },
+    "D": { plane: axis.pieces[6].stickers[2].points.map(e => e.clone()), angle: -90 },
+    "L": { plane: axis.pieces[1].stickers[4].points.map(e => e.clone()), angle: -90 },
+    "B": { plane: axis.pieces[1].stickers[5].points.map(e => e.clone()), angle: -90 },
   };
 
   // Initial rotation

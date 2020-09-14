@@ -47,13 +47,13 @@ export function RUBIK(n: number): PuzzleInterface {
         let center = anchor.add( FRONT.add(RIGHT).add(DOWN).mul(len / 2) );
         let p = new Piece();
         let sUp = new Sticker([
-          anchor.copy(),
+          anchor.clone(),
           anchor.add( FRONT.mul(len) ),
           anchor.add( FRONT.add(RIGHT).mul(len) ),
           anchor.add( RIGHT.mul(len) ),
         ]);
         let sLeft = new Sticker([
-          anchor.copy(),
+          anchor.clone(),
           anchor.add( DOWN.mul(len) ),
           anchor.add( DOWN.add(FRONT).mul(len) ),
           anchor.add( FRONT.mul(len) ),
@@ -74,21 +74,21 @@ export function RUBIK(n: number): PuzzleInterface {
   // console.log(pieces);
 
   rubik.moves = {
-    "U": { plane: pieces[0].stickers[3].copy().points.reverse(), angle: -90 },
-    "R": { plane: pieces[a-1].stickers[4].copy().points.reverse(), angle: -90 },
-    "F": { plane: pieces[a * b - 1].stickers[5].copy().points.reverse(), angle: -90 },
-    "D": { plane: pieces[a * b * c - 1].stickers[0].copy().points.reverse(), angle: -90 },
-    "L": { plane: pieces[0].stickers[1].copy().points.reverse(), angle: -90 },
-    "B": { plane: pieces[0].stickers[2].copy().points.reverse(), angle: -90 },
-    "u": { plane: pieces[a * b].stickers[3].copy().points.reverse(), angle: -90 },
-    "r": { plane: pieces[a * b - 2].stickers[4].copy().points.reverse(), angle: -90 },
-    "f": { plane: pieces[0].stickers[2].copy().points, angle: -90 },
-    "d": { plane: pieces[a * b * (c - 1) - 1].stickers[0].copy().points.reverse(), angle: -90 },
-    "l": { plane: pieces[a + 1].stickers[1].copy().points.reverse(), angle: -90 },
-    "b": { plane: pieces[a].stickers[2].copy().points.reverse(), angle: -90 },
-    "x": { plane: pieces[a - 1].stickers[1].add(RIGHT).copy().points.reverse(), angle: 90 },
-    "y": { plane: pieces[0].stickers[0].add(UP).copy().points.reverse(), angle: 90 },
-    "z": { plane: pieces[0].stickers[5].add(BACK).copy().points.reverse(), angle: -90 },
+    "U": { plane: pieces[0].stickers[3].clone().points.reverse(), angle: -90 },
+    "R": { plane: pieces[a-1].stickers[4].clone().points.reverse(), angle: -90 },
+    "F": { plane: pieces[a * b - 1].stickers[5].clone().points.reverse(), angle: -90 },
+    "D": { plane: pieces[a * b * c - 1].stickers[0].clone().points.reverse(), angle: -90 },
+    "L": { plane: pieces[0].stickers[1].clone().points.reverse(), angle: -90 },
+    "B": { plane: pieces[0].stickers[2].clone().points.reverse(), angle: -90 },
+    "u": { plane: pieces[a * b].stickers[3].clone().points.reverse(), angle: -90 },
+    "r": { plane: pieces[a * b - 2].stickers[4].clone().points.reverse(), angle: -90 },
+    "f": { plane: pieces[0].stickers[2].clone().points, angle: -90 },
+    "d": { plane: pieces[a * b * (c - 1) - 1].stickers[0].clone().points.reverse(), angle: -90 },
+    "l": { plane: pieces[a + 1].stickers[1].clone().points.reverse(), angle: -90 },
+    "b": { plane: pieces[a].stickers[2].clone().points.reverse(), angle: -90 },
+    "x": { plane: pieces[a - 1].stickers[1].add(RIGHT).clone().points.reverse(), angle: 90 },
+    "y": { plane: pieces[0].stickers[0].add(UP).clone().points.reverse(), angle: 90 },
+    "z": { plane: pieces[0].stickers[5].add(BACK).clone().points.reverse(), angle: -90 },
     "M": [ "l", "L'" ],
     "M'": [ "l'", "L" ],
     "M2": [ "l2", "L2" ],

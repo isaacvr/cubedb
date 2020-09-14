@@ -1,9 +1,9 @@
 import { Subject, Observable } from 'rxjs';
 import { RawCard } from '../interfaces/interfaces';
 import { Tutorial } from '../interfaces/interfaces';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { Algorithm } from '../interfaces/interfaces';
-import { IpcRenderer } from 'electron';
+import { IpcRenderer, BrowserWindow } from 'electron';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
@@ -11,71 +11,69 @@ import { HttpClient } from '@angular/common/http';
 })
 export class DataService {
   ipc: IpcRenderer;
+  window: BrowserWindow;
   algSub: Subject< Algorithm[] >
   cardSub: Subject< RawCard[] >
+  tutSub: Subject< Tutorial[] >
 
-  constructor(private http: HttpClient) {
-    this.algSub = new Subject<Algorithm[]>();
-    this.cardSub = new Subject<RawCard[]>();
-    this.ipc = window.require('electron').ipcRenderer;
+  constructor(private http: HttpClient, private ngZone: NgZone) {
+    this.algSub = new Subject< Algorithm[] >();
+    this.cardSub = new Subject< RawCard[] >();
+    this.tutSub = new Subject< Tutorial[] >();
+    
+    let electron = window.require('electron');
+    
+    this.ipc = electron.ipcRenderer;
+    this.window = electron.remote.getCurrentWindow();
+    
     this.setIpc();
   }
 
   setIpc() {
     this.ipc.on('algorithms', (event, algs) => {
-      console.log('ALGORITHMS RECEIVED: ', algs);
-      this.algSub.next(algs);
+      this.ngZone.run(() => {
+        this.algSub.next(algs);
+      });
     });
 
-    this.ipc.on('cards', (event, cards) => {
-      console.log('CARDS RECEIVED: ', cards);
-      this.cardSub.next(cards);
+    this.ipc.on('cards', (event, cards) => {     
+      this.ngZone.run(() => {
+        this.cardSub.next(cards);
+      });
+    });
+
+    this.ipc.on('tutorials', (event, tuts) => {
+      this.ngZone.run(() => {
+        this.tutSub.next(tuts);
+      });
     });
   }
 
   getAlgorithms(dir: string): void {
     this.ipc.send('algorithms', dir);
-    // fetch('http://localhost/algorithms/' + dir)
-    //   .then(res => res.json())
-    //   .then((algs: Algorithm[]) => {
-    //     // console.log('ALGORITMOS!!!!!', algs);
-    //     this.algSub.next( algs );
-    //   });
   }
 
   getCards(): void {
     this.ipc.send('cards');
-    // return fetch('http://localhost/cards')
-    //   .then(res => res.json());
-    // let subscription = this.http.get('http://localhost/' + dir)
-    //   .subscribe((algs: Algorithm[]) => {
-    //     console.log('ALGORITMOS!!!!!');
-    //     this.subject.next( algs );
-
-    //     subscription.unsubscribe();
-    //   });
-    /*return new Observable((observer: Observer<Algorithm[]>) => {
-      this.ipc.on('algorithms', (event, algs) => {
-        console.log('ALGORITHMS RECEIVED: ', algs);
-        observer.next(algs);
-        observer.complete();
-        this.ipc.removeAllListeners('algorithms');
-      });
-
-      this.ipc.send('algorithm', dir);
-
-      return {
-        unsubscribe: () => {}
-      }
-    });//*/
   }
 
   sendCard(card: RawCard): Observable<any> {
-    console.log('CARD: ', card);
     return this.http.post('http://localhost/cards', card);
   }
 
-  getTutorials(): Promise< Tutorial[] > {
-    return fetch('http://localhost/tutorials').then((res) => res.json());
+  getTutorials() {
+    this.ipc.send('tutorials');
+  }
+
+  minimize() {
+    this.ipc.send('minimize');
+  }
+
+  maximize() {
+    this.ipc.send('maximize');
+  }
+
+  close() {
+    this.ipc.send('close');
   }
 }

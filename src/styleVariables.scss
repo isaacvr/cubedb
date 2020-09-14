@@ -1,3 +1,13 @@
+:root {
+  --primary: #8d4cd0;
+  --text-dark: black;
+  --text-light: white;
+}
+
+$primary: var(--primary);
+$text-dark: var(--text-dark);
+$text-light: var(--text-light);
+
 $margin-left: 30px;
 $padding: 20px;
 $margin-right: $margin-left * 2 + $padding * 2;

@@ -61,32 +61,15 @@
     <button type="submit" mat-stroked-button color="primary"
       (click)="save(title.value, scramble.value, link.value, cubeType.value, cubeMode.value, order.value, timer.checked)">Save</button>
   </div>
-
-  <!-- title
-  cube
-  route
-  timer -->
-
   <ul class="card-container">
     <mat-card *ngFor="let card of cards" class="card">
       <mat-card-content>
         <a [routerLink]="card.route">
-          <app-puzzle
-            [cube]="card.cube"
-            [view]="card.view"></app-puzzle>
+          <img [src]="card.cube" class="puzzle-img">
           <img *ngIf="card.timer" src="./assets/timer.svg" class="timer">
         </a>
       </mat-card-content> 
       <mat-card-footer>{{card.title}}</mat-card-footer>
     </mat-card>
-    <!-- <li *ngFor="let card of cards" class="card">
-      <a [routerLink]="card.route">
-        <app-puzzle
-          [cube]="card.cube"
-          [view]="card.view"></app-puzzle>
-        <img *ngIf="card.timer" src="./assets/timer.svg" class="timer">
-        <span>{{card.title}}</span>
-      </a>
-    </li> -->
   </ul>
 </div>

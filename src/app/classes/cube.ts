@@ -93,7 +93,7 @@ class CubeBase {
     // { "front", "left", "back", "right", "up", "down" }
 
     for (let i = 0; i < 6; i += 1) {
-      let tmp: Vector3D = this.cn[ groups[i][0] ].copy();
+      let tmp: Vector3D = this.cn[ groups[i][0] ].clone();
 
       for (let j = 1; j < 4; j += 1) {
         tmp = tmp.add(this.cn[ groups[i][j] ]);
@@ -134,7 +134,7 @@ class CubeBase {
   clone(): CubeBase {
     let res = new CubeBase();
     res.colors = this.colors.map((e) => e);
-    res.cn = this.cn.map((e) => e.copy());
+    res.cn = this.cn.map((e) => e.clone());
     res.setColorMap();
 
     for (let color in this.layerColor) {

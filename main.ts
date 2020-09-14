@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, ipcMain } from 'electron';
+import { app, BrowserWindow, screen, ipcMain, remote } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 let NeDB = require('nedb');
@@ -13,7 +13,7 @@ let Tutorials = new NeDB({ filename: __dirname + '/database/tutorials.db', autol
   
 /// Algorithms handler
 ipcMain.on('algorithms', (event, arg) => {
-  console.log('ARGS: ', arg);
+  // console.log('ARGS: ', arg);
 
   Algorithms.find({
     parentPath: arg
@@ -46,22 +46,52 @@ ipcMain.on('cards', (event, arg) => {
 });
 
 /// Tutorials handler
+ipcMain.on('tutorials', (event) => {
+  Tutorials.find({}, (err, list) => {
+    if ( err ) {
+      console.log('Tutorials Get ERROR: ', err);
+      return event.sender.send('tutorials', []);
+    }
+    let l1 = list.map(e => { return {
+      title: e.title,
+      titleLower: e.titleLower,
+      puzzle: e.puzzle,
+      algs: e.algs
+    } });
+    return event.sender.send('tutorials', l1);
+  });
+});
+
+/// Other Stuff
+ipcMain.on('minimize', () => {
+  win.minimize();
+});
+
+ipcMain.on('maximize', () => {
+  if ( win.isMaximized ) {
+    win.unmaximize();
+  } else {
+    win.maximize();
+  }
+});
+
+ipcMain.on('close', () => {
+  app.exit();
+});
 
 function createWindow(): BrowserWindow {
 
-  const electronScreen = screen;
-  const size = electronScreen.getPrimaryDisplay().workAreaSize;
-
-  // Create the browser window.
   win = new BrowserWindow({
     x: 0,
     y: 0,
-    width: size.width,
-    height: size.height,
+    fullscreen: true,
+    frame: false,
+    closable: true,
     webPreferences: {
       nodeIntegration: true,
-      allowRunningInsecureContent: (serve) ? true : false,
-      enableRemoteModule : false // true if you want to use remote module in renderer context (ie. Angular)
+      // allowRunningInsecureContent: (serve) ? true : false,
+      allowRunningInsecureContent: false,
+      enableRemoteModule : true // true if you want to use remote module in renderer context (ie. Angular)
     },
   });
 
@@ -82,42 +112,25 @@ function createWindow(): BrowserWindow {
     }));
   }
 
-  // Emitted when the window is closed.
-  win.on('closed', () => {
-    // Dereference the window object, usually you would store window
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    win = null;
-  });
+  win.on('closed', () => win = null);
 
   return win;
 }
 
 try {
-  // This method will be called when Electron has finished
-  // initialization and is ready to create browser windows.
-  // Some APIs can only be used after this event occurs.
-  // Added 400 ms to fix the black background issue while using transparent window. More detais at https://github.com/electron/electron/issues/15947
   app.on('ready', () => setTimeout(createWindow, 400));
 
-  // Quit when all windows are closed.
   app.on('window-all-closed', () => {
-    // On OS X it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {
       app.quit();
     }
   });
 
   app.on('activate', () => {
-    // On OS X it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
     if (win === null) {
       createWindow();
     }
   });
 
 } catch (e) {
-  // Catch Error
-  // throw e;
 }

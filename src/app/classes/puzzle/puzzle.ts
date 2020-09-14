@@ -31,6 +31,7 @@ export class Puzzle {
   private _mode: CubeMode;
   private _view: CubeView;
   private _tips: Vector3D[];
+  private _order: number[];
 
   constructor(options: PuzzleOptions) {
     this._type = options.type || 'rubik';
@@ -40,7 +41,7 @@ export class Puzzle {
 
     this.setTips(options.tips || []);
 
-    let a;
+    let a: number[];
 
     if ( Array.isArray(options.order) ) {
       a = options.order;
@@ -50,9 +51,11 @@ export class Puzzle {
       a = [3];
     }
 
-    if ( typeof this._type === 'string' ) {
-      this.p = protos[this._type].apply(null, a);
-    }
+    // if ( typeof this._type === 'string' ) {
+    this.p = protos[this._type].apply(null, a);
+    // }
+
+    this._order = a;
 
     this.rotation = this.p.rotation;
     this.adjustColors();
@@ -82,19 +85,10 @@ export class Puzzle {
 
     let pieces = this.p.pieces;
     let dims = this.p.dims;
-  
-    // console.log('DIMS: ', dims);
 
     for (let i = 0, maxi = pieces.length; i < maxi; i += 1) {
       let stickers = pieces[i].stickers;
       let topLayer = (i < dims[0] * dims[1]);
-      // let c = ~~(i / (dims[0] * dims[1]));
-      // let n = i % (dims[0] * dims[1]);
-      // let b = ~~(n / dims[0]);
-      // let a = n % dims[0];
-      // console.log(i, a, b, c);
-      // console.log('I, TopLayer', i, topLayer);
-
       switch(this._mode) {
         case CubeMode.NORMAL:
         case CubeMode.ELL:
@@ -117,11 +111,6 @@ export class Puzzle {
             }
           }
           break;
-          // let c = getCoords();
-          // if ( cube.a[ c[0] ][ c[1] ][ c[2] ].contains( cube.getColor('U') ) ) {
-          //   return this.colors.G;
-          // }
-          // return this.colors[ str[id][ pos() ] ];
         }
         case CubeMode.CMLL: {
           if ( topLayer && stickers.length === 2 ) {
@@ -130,13 +119,6 @@ export class Puzzle {
             }
           }
           break;
-          // let c = getCoords();
-          // if ( c[1] === 0 ) {
-          //   if ( c[0] === 1 || c[2] === 1 ) {
-          //     return this.colors.G;
-          //   }
-          // }
-          // return this.colors[ str[id][ pos() ] ];
         }
         case CubeMode.OLLCP: {
           if ( topLayer ) {
@@ -149,18 +131,6 @@ export class Puzzle {
             }
           }
           break;
-          // let c = getCoords();
-          // if ( c[1] === 0 ) {
-          //   if ( c[0] === 1 || c[2] === 1 ) {
-          //     if ( cube.a[ c[0] ][ c[1] ][ c[2] ].contains( cube.getColor('U') ) ) {            
-          //       if ( cube.a[ c[0] ][ c[1] ][ c[2] ].getColor(face) === cube.getColor('U') ) {
-          //         return this.colors.U;
-          //       }
-          //       return this.colors.G;
-          //     }
-          //   }
-          // }
-          // return this.colors[ str[id][ pos() ] ];
         }
         case CubeMode.COLL: {
           if ( topLayer ) {
@@ -177,10 +147,7 @@ export class Puzzle {
                 }
 
                 if ( !isTop ) {
-                  // console.log('NOT TOP: ', stickers[j].color);
                   stickers[j].color = 'x';
-                } else {
-                  // console.log('TOP: ', stickers[j].color);
                 }
               }
             }
@@ -190,17 +157,6 @@ export class Puzzle {
             }
           }
           break;
-          // let c = getCoords();
-          
-          // if ( c[1] === 0 ) {
-          //   if ( c[0] === 1 || c[2] === 1 ) {
-          //     if ( "LFRB".indexOf(face) > -1 ) {
-          //       return this.colors.G;
-          //     }
-          //   }
-          // }
-
-          // return this.colors[ str[id][ pos() ] ];
         }
         case CubeMode.VLS:
         case CubeMode.WV: {
@@ -237,7 +193,6 @@ export class Puzzle {
           break;
         }
         default: {
-          // return this.colors[ str[id][ pos() ] ];
           break;
         }
     
@@ -277,15 +232,11 @@ export class Puzzle {
 
   static fromSequence(scramble: string, options: PuzzleOptions, inv ?: boolean): Puzzle {
     let p = new Puzzle(options);
-    // console.log('SCRAMBLE: ', scramble);
-    // console.log('SCRAMBLE_INV: ', Puzzle.inverse(options.type, scramble));
-    // console.log("\n");
     p.move( (inv) ? Puzzle.inverse(options.type, scramble) : scramble);
     return p;
   }
 
   private rotate(move: string, dir: number, turns: number) {
-    // console.log("MV: ", move, dir, turns);
     const moveObj = this.p.moves[ move ];
     const pieces = this.p.pieces;
     const pts = moveObj.plane;
@@ -315,7 +266,6 @@ export class Puzzle {
   }
 
   private singleMove(_move: string): void {
-    // console.log("SM: ", _move);
     let moveArr = _move.split('');
     let moveLen = moveArr.length - 1;
 
@@ -389,17 +339,21 @@ export class Puzzle {
     }
 
     for (let p = 0, maxp = pieces.length; p < maxp; p += 1) {
-      for (let s = 0, maxs = pieces[p].stickers.length; s < maxs; s += 1) {
-        let v = pieces[p].stickers[s].getOrientation();
+      let stickers = pieces[p].stickers;
+
+      for (let s = 0, maxs = stickers.length; s < maxs; s += 1) {
+        if ( "xd".indexOf(stickers[s].color) > -1 ) {
+          continue;
+        }
+
+        let v = stickers[s].getOrientation();
         let ok = false;
 
         for (let j = 0; j < fbLen; j += 1) {
           if ( v.sub( fb[j] ).abs() < 1e-6 ) {
             if ( colors[j] === '-' ) {
-              colors[j] = pieces[p].stickers[s].color;
-              // console.log('COLORS ', i, layers[j], ': ', colors);
-            } else if ( colors[j] != pieces[p].stickers[s].color ) {
-              // console.log('COLOR D/OES NOT MATCH', i, layers[j], colors[j], this.p.fc[i]);
+              colors[j] = stickers[s].color;
+            } else if ( colors[j] != stickers[s].color ) {
               return false;
             }
 
@@ -409,7 +363,6 @@ export class Puzzle {
         }
 
         if ( !ok ) {
-          // console.log('PIECE MISSORIENTED');
           return false;
         }
       }
@@ -424,10 +377,6 @@ export class Puzzle {
     if ( this._type == 'square1' ) {
       s1 = seq.replace(/\s\S/g, '').split('/');
     }
-
-    // console.log('SEQ: ', seq);
-
-    assignColors(this.p, this.p.faceColors);
 
     for (let i = 0, maxi = s1.length; i < maxi; i += 1) {
       if ( this._type == 'square1' ) {
@@ -462,12 +411,29 @@ export class Puzzle {
   get pieces(): Piece[] {
     return this.p.pieces;
   }
-  
-  // get str(): string[] {
-  //   return this.p.fc;
-  // }
 
   getAllStickers() {
     return this.p.getAllStickers();
   }
+
+  clone(): Puzzle {
+    let res = new Puzzle({
+      type: this._type,
+      mode: this._mode,
+      view: this._view,
+      order: this._order,
+    });
+
+    res.p.pieces = this.p.pieces.map(p => {
+      return p.clone();
+    });
+    res.p.center = this.p.center.clone();
+    res.p.dims = this.p.dims.map(e => e);
+    res.p.faceColors = this.p.faceColors.map(e => e);
+    res.p.faceVectors = this.p.faceVectors.map(e => e.clone());
+    res.p.rotation = Object.assign({}, this.p.rotation);
+
+    return res;
+  }
+
 }

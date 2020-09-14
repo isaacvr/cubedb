@@ -17,8 +17,7 @@ export class NavbarComponent implements OnInit {
   ngOnInit() {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
-        let parts = event.url.split(/[/?]/);
-        console.log('PARTS', parts);
+        let parts = event.urlAfterRedirects.split(/[/?]/);
 
         this.parts.length = 0;
 

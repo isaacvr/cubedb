@@ -5,24 +5,34 @@ export enum CubeMode {
 export declare type ColorName = 'green' | 'red' | 'blue' | 'orange' | 'yellow' | 'white' |
   'gray' | 'black';
 
+// const COLORS = {
+//   "green": "rgb(42, 196, 75)",
+//   "red": "rgb(240, 48, 49)",
+//   "blue": "rgb(53, 94, 229)",
+//   "orange": "rgb(247, 120, 36)",
+//   "yellow": "rgb(255, 255, 37)",
+//   "white": "rgb(230, 230, 230)",
+//   "black": "rgb(0, 0, 0)",
+//   "gray": "rgb(80, 80, 80)",
+// };
+
+const COLORS = {
+  "green": "rgb(76,175,80)",
+  "red": "rgb(229,57,53)",
+  "blue": "rgb(25,118,210)",
+  "orange": "rgb(245,124,0)",
+  "yellow": "rgb(255,235,59)",
+  "white": "rgb(230, 230, 230)",
+  "black": "rgb(0, 0, 0)",
+  "gray": "rgb(80, 80, 80)",
+};
+
 export function getColorByName(colorName: ColorName) {
-  if ( colorName === "green" ) {
-    return "rgb(42, 196, 75)";
-  } else if ( colorName === "red" ) {
-    return "rgb(240, 48, 49)";
-  } else if ( colorName === "blue" ) {
-    return "rgb(53, 94, 229)";
-  } else if ( colorName === "orange" ) {
-    return "rgb(247, 120, 36)";
-  } else if ( colorName === "yellow" ) {
-    return "rgb(255, 255, 37)";
-  } else if ( colorName === "white" ) {
-    return "rgb(230, 230, 230)";
-  } else if ( colorName === "black" ) {
-    return "rgb(0, 0, 0)";
+  if ( COLORS.hasOwnProperty(colorName) ) {
+    return COLORS[colorName];
   }
-  
-  return "rgb(80, 80, 80)";
+
+  return "rgb(150, 150, 150)";
 }
 
 export function getNameByColor(color: string): ColorName {

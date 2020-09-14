@@ -68,7 +68,7 @@ export class Vector3D {
 
   }
 
-  copy(): Vector3D {
+  clone(): Vector3D {
     return new Vector3D(this.x, this.y, this.z);
   }
 

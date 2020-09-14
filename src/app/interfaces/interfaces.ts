@@ -7,7 +7,7 @@ import { CubeMode } from "../constants/constants";
 
 export interface Card {
   title: string;
-  cube: Puzzle;
+  cube: string;
   route: string;
   timer?: boolean;
 }
@@ -39,7 +39,7 @@ export interface Algorithm {
   puzzle?: string;
   solutions?: Solution[];
   mode: CubeMode;
-  cube ?: Puzzle;
+  cube ?: string;
   tips ?: number[];
   parentPath ?: string;
   view?: CubeView;

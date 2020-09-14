@@ -1,1 +1,9 @@
-<p>tutorial-parser works!</p>
+<div class="container-mini"><h1>{{title}}</h1></div>
+<div class="container-mini" *ngFor="let block of blocks">
+  <ng-container *ngIf="block.type === 'text'">
+    {{block.content}}
+  </ng-container>
+  <ng-container *ngIf="block.type === 'cubes'">
+    <img class="puzzle-img-mini" *ngFor="let img of block.imgs" [src]="img">
+  </ng-container>
+</div>

@@ -1,6 +1,7 @@
 import { DataService } from '../../services/data.service';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Tutorial } from '../../interfaces/interfaces';
+import { Subscription } from 'rxjs';
 
 interface TutorialGroup {
   [name: string]: Tutorial[]
@@ -11,13 +12,14 @@ interface TutorialGroup {
   templateUrl: './tutorials.component.html',
   styleUrls: ['./tutorials.component.scss']
 })
-export class TutorialsComponent {
+export class TutorialsComponent implements OnDestroy {
   tutorials: TutorialGroup;
   keys: string[];
+  subscription: Subscription;
 
   constructor(private dataService: DataService) {
 
-    this.dataService.getTutorials().then(list => {
+    this.subscription = this.dataService.tutSub.subscribe(list => {
       this.tutorials = {};
 
       console.log('LIST', list);
@@ -38,39 +40,12 @@ export class TutorialsComponent {
       }
 
     });
-    // this.keys = [ "2x2x2", "3x3x3", "4x4x4" ];
-    // this.tutorials = {
-    //   "2x2x2": [
-    //     {
-    //       title: "Beginner",
-    //       puzzle: "2x2x2",
-    //     },
-    //   ],
-    //   "3x3x3": [
-    //     {
-    //       title: "Beginner",
-    //       puzzle: "3x3x3",
-    //     },
-    //     {
-    //       title: "Reduced CFOP",
-    //       puzzle: "3x3x3",
-    //     },
-    //   ],
-    //   "4x4x4": [
-    //     {
-    //       title: "Beginner",
-    //       puzzle: "4x4x4",
-    //     },
-    //     {
-    //       title: "Yau",
-    //       puzzle: "4x4x4",
-    //     },
-    //     {
-    //       title: "Free Slice",
-    //       puzzle: "4x4x4",
-    //     },
-    //   ],
-    // };
+    
+    this.dataService.getTutorials();
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
 }

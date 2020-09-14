@@ -118,9 +118,9 @@ export function SQUARE1(): PuzzleInterface {
   sq1.pieces.push(mid.rotate(CENTER, UP, PI));
 
   sq1.moves = {
-    "/": { plane: mid.stickers[2].copy().points, angle: 180 },
-    "U": { plane: pieceBig.stickers[2].copy().points, angle: -30 },
-    "D": { plane: mid.stickers[5].copy().points.reverse(), angle: -30 },
+    "/": { plane: mid.stickers[2].clone().points, angle: 180 },
+    "U": { plane: pieceBig.stickers[2].clone().points, angle: -30 },
+    "D": { plane: mid.stickers[5].clone().points.reverse(), angle: -30 },
   }
 
   // Colours to use for facelets

@@ -38,14 +38,14 @@ export function FISHER(): PuzzleInterface {
 
   let piece1 = new Piece([
     new Sticker([
-      A.copy(),
+      A.clone(),
       A.add( AB.mul(L1) ),
       A.add( AB.mul(L1) ).add( VL ),
       A.add( AC.mul(L1) ).add( VL ),
       A.add( AC.mul(L1) ),
     ]),
     new Sticker([
-      A.copy(),
+      A.clone(),
       A.add( DOWN.mul(L23) ),
       A.add( DOWN.mul(L23) ).add( FRONT.mul(L1) ),
       A.add( FRONT.mul(L1) ),
@@ -94,7 +94,7 @@ export function FISHER(): PuzzleInterface {
   }
 
   upFace.push(new Piece([
-    new Sticker([0, 1, 2, 3].map(e => upFace[e * 2 + 1].stickers[0].points[2].copy()))
+    new Sticker([0, 1, 2, 3].map(e => upFace[e * 2 + 1].stickers[0].points[2].clone()))
   ]));
 
   let midFace = upFace.map(p => p.add( DOWN.mul(L23) ));
@@ -107,12 +107,12 @@ export function FISHER(): PuzzleInterface {
   fisher.pieces.push(...downFace);
 
   fisher.moves = {
-    "U": { plane: upFace[1].stickers[3].points.map(e => e.copy()), angle: -90 },
-    "R": { plane: upFace[3].stickers[2].points.map(e => e.copy()), angle: -90 },
-    "F": { plane: upFace[1].stickers[2].points.map(e => e.copy()), angle: -90 },
-    "D": { plane: downFace[1].stickers[3].points.map(e => e.copy()), angle: -90 },
-    "L": { plane: upFace[0].stickers[2].points.map(e => e.copy()).reverse(), angle: -90 },
-    "B": { plane: upFace[5].stickers[2].points.map(e => e.copy()), angle: -90 },
+    "U": { plane: upFace[1].stickers[3].points.map(e => e.clone()), angle: -90 },
+    "R": { plane: upFace[3].stickers[2].points.map(e => e.clone()), angle: -90 },
+    "F": { plane: upFace[1].stickers[2].points.map(e => e.clone()), angle: -90 },
+    "D": { plane: downFace[1].stickers[3].points.map(e => e.clone()), angle: -90 },
+    "L": { plane: upFace[0].stickers[2].points.map(e => e.clone()).reverse(), angle: -90 },
+    "B": { plane: upFace[5].stickers[2].points.map(e => e.clone()), angle: -90 },
   };
 
   // Initial rotation

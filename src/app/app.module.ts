@@ -19,6 +19,7 @@ import { CubeimgComponent } from './components/cubeimg/cubeimg.component';
 import { PuzzleComponent } from './components/puzzle/puzzle.component';
 import { TutorialsComponent } from './components/tutorials/tutorials.component';
 import { TutorialParserComponent } from './components/tutorial-parser/tutorial-parser.component';
+import { FrameComponent } from './components/frame/frame.component';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import { TutorialParserComponent } from './components/tutorial-parser/tutorial-p
     PuzzleComponent,
     TutorialsComponent,
     TutorialParserComponent,
+    FrameComponent,
   ],
   imports: [
     BrowserModule,
