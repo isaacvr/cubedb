@@ -17,10 +17,10 @@ export declare type ColorName = 'green' | 'red' | 'blue' | 'orange' | 'yellow' |
 // };
 
 const COLORS = {
-  "green": "rgb(76,175,80)",
+  "green": "rgb(63, 197, 69)",
   "red": "rgb(229,57,53)",
   "blue": "rgb(25,118,210)",
-  "orange": "rgb(245,124,0)",
+  "orange": "rgb(255,167,38)",
   "yellow": "rgb(255,235,59)",
   "white": "rgb(230, 230, 230)",
   "black": "rgb(0, 0, 0)",

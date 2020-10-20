@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen, ipcMain, remote } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import * as url from 'url';
 let NeDB = require('nedb');

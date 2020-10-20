@@ -1,0 +1,83 @@
+<div class="container">
+  <div class="container-mini" *ngIf="stage === 0">
+    <mat-form-field>
+      <span>Top Face</span>
+      <mat-select [(value)]="topFace">
+        <mat-option value="random">Color neutral</mat-option>
+        <mat-option value="x2">White</mat-option>
+        <mat-option value="">Yellow</mat-option>
+        <mat-option value="z">Red</mat-option>
+        <mat-option value="z'">Orange</mat-option>
+        <mat-option value="x'">Blue</mat-option>
+        <mat-option value="x">Green</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field>
+      <span>Samples</span>
+      <mat-select [(value)]="cases">
+        <mat-option
+          *ngFor="let i of SAMPLES" [value]="i">{{i}}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <div>
+      <button mat-stroked-button (click)="next()">Next</button>
+    </div>
+  </div>
+  <div class="container-mini" *ngIf="stage === 1">
+    <h3>Case {{idx + 1}}/{{cases}}</h3>
+    <div>
+      <img [src]="images[ idx ]" class="puzzle-img" alt="">
+    </div>
+    <div>
+      <button
+        *ngFor="let f of filters; index as i"
+        class="answer"
+        [disabled]="showAnswer"
+        [class.right]="f == caseName[ idx ] && showAnswer"
+        [class.wrong]="f != caseName[ idx ] && f == lastAnswer && showAnswer"
+        (click)="addAnswer(f)"
+        mat-stroked-button
+        >{{f}}</button>
+    </div>
+  </div>
+  <div class="container-mini" *ngIf="stage === 2">
+    <span>Completed: {{correct}}/{{cases}}</span>
+    <mat-icon svgIcon="check" *ngIf="correct == cases"></mat-icon>
+    <button mat-stroked-button (click)="next()" style="margin-left: 50px;">Try again</button>
+  </div>
+  <div class="container-mini" *ngIf="stage === 2">
+    <table mat-table [dataSource]="bundle" multiTemplateDataRows class="mat-elevation-z8 algorithm-container light">
+      <ng-container matColumnDef="No">
+        <th mat-header-cell *matHeaderCellDef>No.</th>
+        <td mat-cell *matCellDef="let element">{{element.id}}</td>
+      </ng-container>
+  
+      <ng-container matColumnDef="Case">
+        <th mat-header-cell *matHeaderCellDef>Case</th>
+        <td mat-cell *matCellDef="let element">
+          <img [src]="element.img" class="puzzle-img case" alt="">
+        </td>
+      </ng-container>
+  
+      <ng-container matColumnDef="Expected">
+        <th mat-header-cell *matHeaderCellDef>Expected</th>
+        <td mat-cell *matCellDef="let element">{{element.expected}}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="Answer">
+        <th mat-header-cell *matHeaderCellDef>Given</th>
+        <td mat-cell *matCellDef="let element">{{element.answer}}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="Time">
+        <th mat-header-cell *matHeaderCellDef>Time</th>
+        <td mat-cell *matCellDef="let element">{{element.time | timer:false:true}}</td>
+      </ng-container>
+  
+      <tr mat-header-row *matHeaderRowDef="columns"></tr>
+      <tr mat-row *matRowDef="let element; columns: columns;" class="element-row">
+      </tr>
+    </table>
+  </div>
+</div>

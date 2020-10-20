@@ -1,7 +1,7 @@
 import { RawCard } from './../../interfaces/interfaces';
 import { DataService } from '../../services/data.service';
 import { Puzzle } from '../../classes/puzzle/puzzle';
-import { Component, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { CubeMode, LOADING_IMG } from '../../constants/constants';
 import { Router } from '@angular/router';
 import { Card } from '../../interfaces/interfaces';
@@ -42,7 +42,8 @@ export class HomeComponent implements OnDestroy {
             route: e.route,
             title: e.title,
             timer: e.timer,
-            createdAt: e.createdAt
+            createdAt: e.createdAt,
+            ready: false,
           };
         });
 
@@ -62,7 +63,8 @@ export class HomeComponent implements OnDestroy {
 
         let subsc = generateCubeBundle(cubes).subscribe({
           next: (img) => {
-            this.cards[idx].cube = img;
+            this.cards[idx].cube = <string>img;
+            this.cards[idx].ready = true;
             idx += 1;
             // console.log("IMAGE!");
           },
@@ -95,17 +97,11 @@ export class HomeComponent implements OnDestroy {
     console.log(title, scramble, route, cubeType, cubeMode, order, timer);
 
     let card: Card = {
-      // cube: Puzzle.fromSequence(scramble, {
-      //   type: cubeType,
-      //   mode: +cubeMode,
-      //   order: [+order],
-      //   tips: [],
-      //   view: "trans"
-      // }, true),
       cube: LOADING_IMG,
       route,
       title,
-      timer
+      timer,
+      ready: false
     };
 
     this.cards.push(card);

@@ -2,8 +2,8 @@ import { Observable, Observer } from 'rxjs';
 import { Puzzle } from './classes/puzzle/puzzle';
 import * as THREE from 'three';
 
-export function generateCubeBundle(cubes: Puzzle[], width ?: number): Observable< string > {
-  return new Observable((observer: Observer<string>) => {
+export function generateCubeBundle(cubes: Puzzle[], width ?: number, all ?: boolean): Observable< string | string[] > {
+  return new Observable((observer: Observer<string | string[]>) => {
 
     const W = width || 250;
     let renderer = new THREE.WebGLRenderer({
@@ -24,10 +24,17 @@ export function generateCubeBundle(cubes: Puzzle[], width ?: number): Observable
     let c = 0;
     let maxc = cubes.length;
 
+    let buff: string[] = [];
+
     let itv = setInterval(() => {
       if ( c >= maxc ) {
         clearInterval(itv);
         renderer.dispose();
+
+        if ( all ) {
+          observer.next(buff);
+        }
+
         observer.complete();
         return;
       }
@@ -102,13 +109,17 @@ export function generateCubeBundle(cubes: Puzzle[], width ?: number): Observable
 
       renderer.render(scene, camera);
 
-      observer.next( renderer.domElement.toDataURL() );      
+      if ( all ) {
+        buff.push( renderer.domElement.toDataURL() );
+      } else {
+        observer.next( renderer.domElement.toDataURL() );
+      }
 
       group.visible = false;
 
       c += 1;
 
-    }, 50);
+    }, 20);
 
   });
 

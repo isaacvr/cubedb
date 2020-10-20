@@ -35,8 +35,8 @@ export class NavbarComponent implements OnInit {
             break;
           } else {
             this.parts.push({
-              name: parts[i],
-              link: parts.slice(0, i + 1).join('/')
+              name: decodeURIComponent(parts[i]),
+              link: decodeURIComponent(parts.slice(0, i + 1).join('/'))
             });
           }
         }

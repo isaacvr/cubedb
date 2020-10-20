@@ -1,0 +1,40 @@
+<div *ngIf="type == 'edit-scramble'">
+  <mat-form-field>
+    <input matInput [(ngModel)]="rawData" type="text" placeholder="New scramble..." size="80">
+  </mat-form-field>
+  <mat-form-field>
+    <mat-checkbox [(ngModel)]="dontCare">Don't Care</mat-checkbox>
+  </mat-form-field>
+  <div>
+    <button mat-button (click)="close()">Cancel</button>
+    <button mat-button [disabled]="!validateScramble(rawData)" (click)="close(rawData)">Save</button>
+  </div>
+</div>
+<div *ngIf="type == 'edit-solve'" class="solve-detail">
+  <h2 class="solve-time">{{rawData.time | timer:false:true}}</h2>
+  <span class="solve-date">
+    <mat-icon svgIcon="calendar"></mat-icon> {{rawData.date | date:'dd/MM/yyyy HH:MM'}}
+  </span>
+  <mat-divider></mat-divider>
+  <table class="algorithm-container light">
+    <tr><td><mat-icon svgIcon="comment"></mat-icon></td> <td>{{rawData.comment}}</td></tr>
+    <tr><td><mat-icon svgIcon="dice"></mat-icon></td> <td>{{rawData.scramble}}</td></tr>
+  </table>
+  <mat-divider></mat-divider>
+</div>
+<div *ngIf="type == 'old-scrambles'">
+  <table mat-table [dataSource]="rawData" multiTemplateDataRows class="mat-elevation-z8 algorithm-container light">
+    <ng-container matColumnDef="Scramble">
+      <th mat-header-cell *matHeaderCellDef>Scramble</th>
+      <td mat-cell *matCellDef="let element">{{element.scramble}}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="Time">
+      <th mat-header-cell *matHeaderCellDef>Time</th>
+      <td mat-cell *matCellDef="let element">{{element.time | timer:false:true}}</td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columns"></tr>
+    <tr mat-row *matRowDef="let element; columns: columns;" class="element-row" (click)="select(element)"></tr>
+  </table>
+</div>

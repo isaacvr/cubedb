@@ -2,9 +2,10 @@ const PERLIN_YWRAPB = 4;
 const PERLIN_YWRAP = 1 << PERLIN_YWRAPB;
 const PERLIN_ZWRAPB = 8;
 const PERLIN_ZWRAP = 1 << PERLIN_ZWRAPB;
-const PERLIN_SIZE = 4095;
+// const PERLIN_SIZE = 4095;
+const PERLIN_SIZE = 8191;
 
-let perlin_octaves = 4; // default to medium smooth
+let perlin_octaves = 10; // default to medium smooth
 let perlin_amp_falloff = 0.5; // 50% reduction/octave
 
 function scaled_cosine(i: number): number {

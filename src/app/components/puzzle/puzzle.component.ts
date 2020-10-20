@@ -11,7 +11,7 @@ import * as THREE from 'three/src/Three';
 })
 export class PuzzleComponent implements AfterViewInit {
   @Input('cube') puzzle: Puzzle;
-  @Input('view') view: CubeView;
+  // @Input('view') view: CubeView;
 
   @ViewChild('img') img: ElementRef<HTMLImageElement>;
 

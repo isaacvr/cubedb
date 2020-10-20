@@ -4,7 +4,6 @@ import { PuzzleInterface } from './../../interfaces/interfaces';
 import { STANDARD_PALETTE } from "../../constants/constants";
 import { Piece } from './Piece';
 import { Sticker } from './Sticker';
-import { splitClasses } from '@angular/compiler';
 import { assignColors, getAllStickers } from './puzzleUtils';
 
 export function RUBIK(n: number): PuzzleInterface {
@@ -12,9 +11,6 @@ export function RUBIK(n: number): PuzzleInterface {
   const b = n;
   const c = n;
   const len = 2 / n;
-// export function RUBIK(a: number, b: number, c: number): PuzzleInterface {  
-  // const len = Math.min( 2 / a, 2 / b, 2 / c );
-
 
   // The puzzle is defined as an object on the TTk.Puzzle namespace
   const rubik: PuzzleInterface = {

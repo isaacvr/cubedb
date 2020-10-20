@@ -6,7 +6,7 @@
   <ul class="card-container" [class.nshow]="type >= 2">
     <mat-card *ngFor="let card of cards" class="card" [routerLink]="card.route">
       <mat-card-content>
-        <img [src]="card.cube" class="puzzle-img" alt="">
+        <img [src]="card.cube" class="puzzle-img" [class.ready]="card.ready" alt="">
         <img *ngIf="card.timer" src="./assets/timer.svg" class="timer">
       </mat-card-content> 
       <mat-card-footer>{{card.title}}</mat-card-footer>

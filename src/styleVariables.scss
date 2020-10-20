@@ -1,16 +1,16 @@
-:root {
-  --primary: #8d4cd0;
-  --text-dark: black;
-  --text-light: white;
-}
-
 $primary: var(--primary);
+$accent: var(--accent);
+$light: var(--light);
+$bgcard: var(--bgcard);
 $text-dark: var(--text-dark);
 $text-light: var(--text-light);
 
-$margin-left: 30px;
+$margin-left: 0px;
 $padding: 20px;
 $margin-right: $margin-left * 2 + $padding * 2;
 
 $img-width: 150px;
 $img-detail-width: 200px;
+
+$regular-font: var(--regular-font);
+$timer-font: var(--timer-font);

@@ -1,0 +1,184 @@
+<div class="global-container" [class.running]="state >= 3">
+  <div class="form-container">
+    <div class="row">
+      <mat-form-field>
+        <mat-select [(value)]="group" (selectionChange)="selectedGroup()">
+          <mat-option *ngFor="let p of groups; let i = index;" [value]="i">
+            {{p}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-select [(value)]="mode" (selectionChange)="selectedMode()">
+          <mat-option *ngFor="let m of modes;" [value]="m">{{m[0] | uppercase}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field *ngIf="filters.length > 0">
+        <mat-select [(value)]="prob" (selectionChange)="selectedFilter()">
+          <mat-option [value]="-1">{{'RANDOM' | uppercase}}</mat-option>
+          <mat-option *ngFor="let f of filters; let i = index;" [value]="i">{{f | uppercase}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field *ngIf="tab == 2">
+        <input matInput
+          [value]="AoX"
+          (change)="changeAoX($event)"
+          type="number" value="100" min="10" max="10000" step="1">
+      </mat-form-field>
+    </div>
+  </div>
+  <div id="selectTools" [class.isVisible]="selected">
+    <button mat-button (click)="selectAll()"> <mat-icon svgIcon="select-all"></mat-icon> Select All</button>
+    <button mat-button (click)="selectInterval()"> <mat-icon svgIcon="arrow-expand-horizontal"></mat-icon> Select Interval</button>
+    <button mat-button (click)="selectInvert()"> <mat-icon svgIcon="select-inverse"></mat-icon> Invert Selection</button>
+    <button mat-button (click)="selectNone()"> <mat-icon svgIcon="select-off"></mat-icon> Cancel </button>
+    <button mat-button > <mat-icon svgIcon="delete"></mat-icon> Delete</button>
+  </div>
+  <mat-tab-group headerPosition="below" [(selectedIndex)]="tab">
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon svgIcon="timer"></mat-icon>
+      </ng-template>
+      <div class="scramble">
+        <span *ngIf="!scramble">
+          {{stateMessage}}
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </span>
+        <span [innerHTML]="scramble">
+        </span>
+        <mat-icon matTooltip="Reload" matTooltipHideDelay="100" (click)="initScrambler()" matSuffix svgIcon="refresh"></mat-icon>
+        <mat-icon matTooltip="Edit" (click)="editScramble()" matTooltipHideDelay="100" matSuffix svgIcon="pencil-outline"></mat-icon>
+        <mat-icon matTooltip="Use old scramble" (click)="oldScrambles()" matTooltipHideDelay="100" matSuffix svgIcon="calendar-text-outline"></mat-icon>
+      </div>
+      <div class="clock">
+        <span
+          class="timer"
+          [class.prevention]="state === 2"
+          [class.ready]="ready">{{time | timer:decimals:false}}</span>
+        <div class="solve-control" *ngIf="state === 1" [class.show]="state === 1">
+          <mat-icon (click)="deleteLastSolve()" matTooltip="Delete" matTooltipHideDelay="100" svgIcon="close"></mat-icon>
+          <mat-icon [class.highlight]="lastSolve.penalty === 2" (click)="dnf()"  matTooltip="DNF" matTooltipHideDelay="100" svgIcon="thumb-down"></mat-icon>
+          <mat-icon [class.highlight]="lastSolve.penalty === 1" (click)="plus2()" matTooltip="+2" matTooltipHideDelay="100" svgIcon="flag-outline"></mat-icon>
+          <mat-icon (click)="addComment()" matTooltip="Comment" matTooltipHideDelay="100" svgIcon="comment-plus-outline"></mat-icon>
+        </div>
+      </div>
+      <div class="cross-hint" [class.isVisible]="hintDialog && state <= 2">
+        <table [class.nshow]="!hint">
+          <tr><td>Cross</td> <td>{{cross}}</td></tr>
+          <tr><td>XCross</td> <td>{{xcross}}</td></tr>
+        </table>
+        <mat-icon matSuffix [class.nshow]="!hint" svgIcon="lightbulb-on" (click)="hint = !hint"></mat-icon>
+      </div>
+      <div class="statistics" [class.isVisible]="state <= 2">
+        <div class="left">
+          <table>
+            <tr [class.better]="stats.best.better && stats.__counter > 0 && stats.best.value > -1">
+              <td>Best:</td>
+              <td *ngIf="!stats.best.value">N/A</td>
+              <td *ngIf="stats.best.value">{{ stats.best.value | timer : false : true }}</td>
+            </tr>
+            <tr>
+              <td>Worst:</td>
+              <td *ngIf="!stats.worst.value">N/A</td>
+              <td *ngIf="stats.worst.value">{{ stats.worst.value | timer : false : true }}</td>
+            </tr>
+            <tr [class.better]="stats.avg.better && stats.__counter > 0">
+              <td>Avg:</td>
+              <td *ngIf="!stats.avg.value">N/A</td>
+              <td *ngIf="stats.avg.value">{{ stats.avg.value | timer : false : true }}</td>
+            </tr>
+            <tr>
+              <td>Count:</td>
+              <td>{{ stats.count.value }}</td>
+            </tr>
+            <tr [class.better]="stats.Ao5.better && stats.__counter > 0 && stats.Ao5.value > -1">
+              <td>Ao5:</td>
+              <td *ngIf="!(stats.Ao5.value > -1)">N/A</td>
+              <td *ngIf="(stats.Ao5.value > -1)">{{ stats.Ao5.value | timer : false : true }}</td>
+            </tr>
+            <tr [class.better]="stats.Ao12.better && stats.__counter > 0 && stats.Ao12.value > -1">
+              <td>Ao12:</td>
+              <td *ngIf="!(stats.Ao12.value > -1)">N/A</td>
+              <td *ngIf="(stats.Ao12.value > -1)">{{ stats.Ao12.value | timer : false : true }}</td>
+            </tr>
+          </table>
+        </div>
+        <div class="right">
+          <table>
+            <tr [class.better]="stats.Ao50.better && stats.__counter > 0 && stats.Ao50.value > -1">
+              <td>Ao50:</td>
+              <td *ngIf="!(stats.Ao50.value > -1)">N/A</td>
+              <td *ngIf="(stats.Ao50.value > -1)">{{ stats.Ao50.value | timer : false : true }}</td>
+            </tr>
+            <tr [class.better]="stats.Ao100.better && stats.__counter > 0 && stats.Ao100.value > -1">
+              <td>Ao100:</td>
+              <td *ngIf="!(stats.Ao100.value > -1)">N/A</td>
+              <td *ngIf="(stats.Ao100.value > -1)">{{ stats.Ao100.value | timer : false : true }}</td>
+            </tr>
+            <tr [class.better]="stats.Ao200.better && stats.__counter > 0 && stats.Ao200.value > -1">
+              <td>Ao200:</td>
+              <td *ngIf="!(stats.Ao200.value > -1)">N/A</td>
+              <td *ngIf="(stats.Ao200.value > -1)">{{ stats.Ao200.value | timer : false : true }}</td>
+            </tr>
+            <tr [class.better]="stats.Ao500.better && stats.__counter > 0 && stats.Ao500.value > -1">
+              <td>Ao500:</td>
+              <td *ngIf="!(stats.Ao500.value > -1)">N/A</td>
+              <td *ngIf="(stats.Ao500.value > -1)">{{ stats.Ao500.value | timer : false : true }}</td>
+            </tr>
+            <tr [class.better]="stats.Ao1k.better && stats.__counter > 0 && stats.Ao1k.value > -1">
+              <td>Ao1k:</td>
+              <td *ngIf="!(stats.Ao1k.value > -1)">N/A</td>
+              <td *ngIf="(stats.Ao1k.value > -1)">{{ stats.Ao1k.value | timer : false : true }}</td>
+            </tr>
+            <tr [class.better]="stats.Ao2k.better && stats.__counter > 0 && stats.Ao2k.value > -1">
+              <td>Ao2k:</td>
+              <td *ngIf="!(stats.Ao2k.value > -1)">N/A</td>
+              <td *ngIf="(stats.Ao2k.value > -1)">{{ stats.Ao2k.value | timer : false : true }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon svgIcon="format-list-bulleted"></mat-icon>
+      </ng-template>
+      <div class="pill-container no-scrollbar">
+        <mat-menu #pillMenu="matMenu" >
+          <ng-template matMenuContent let-solve="solve">
+            <button mat-menu-item (click)="solveClick(solve, true)">Select</button>
+            <button mat-menu-item (click)="editSolve(solve)">Edit</button>
+          </ng-template>
+        </mat-menu>
+        <div
+          *ngFor="let solve of solves; index as i"
+          class="solve-pill"
+          (click)="solveClick(solve)"
+          [class.selected]="solve.selected"
+          [matMenuTriggerFor]="pillMenu"
+          [matMenuTriggerData]="{ solve: solve }">
+          <div class="date">{{ solve.date | date:'dd/MM' }}</div>
+          <span *ngIf="solve.penalty === 2" class="dnf">DNF</span>
+          <span class="time">{{ solve.time | timer:true }}</span>
+          <span *ngIf="solve.penalty === 1" class="p2">+2</span>
+          <mat-icon  *ngIf="solve.comment" class="comment" svgIcon="comment-plus-outline"></mat-icon>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon svgIcon="chart-line-variant"></mat-icon>
+      </ng-template>
+      <canvas baseChart
+        [datasets]="lineChartData"
+        [labels]="lineChartLabels"
+        [options]="lineChartOptions"
+        [colors]="lineChartColors"
+        [legend]="lineChartLegend"
+        [chartType]="lineChartType"
+        [plugins]="lineChartPlugins"
+        >
+      </canvas>
+    </mat-tab>
+  </mat-tab-group>
+</div>

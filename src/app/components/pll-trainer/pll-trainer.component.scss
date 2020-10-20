@@ -1,0 +1,111 @@
+@import '../../../styleVariables.scss';
+
+::ng-deep {
+  .mat-tab-label-container {
+    transition: 800ms;
+  }
+
+  .running {
+    .mat-tab-label-container {
+      margin-top: 50px;
+      margin-bottom: -50px;
+    }
+
+    .scramble {
+      opacity: 0;
+      margin-top: -55px;
+    }
+  }
+
+  .mat-tab-body-wrapper {
+    height: 100%;
+  }
+
+  .mat-tab-label {
+    width: 33.33333333%;
+    background-color: #{$light};
+    color: #{$text-dark};
+  }
+
+  .mat-select-value-text, .mat-option {
+    color: #{$text-dark};
+  }
+
+  .mat-select-panel {
+    background-color: #{$bgcard};
+  }
+}
+
+mat-form-field {
+  margin: 10px;
+  color: #{$text-dark};
+}
+
+mat-horizontal-stepper {
+  background-color: #{$bgcard};
+  border-radius: 6px;
+  box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.3);
+}
+
+mat-select {
+  margin-top: 10px;
+}
+
+button {
+  color: #{$text-dark};
+
+  &.answer {
+    margin: 10px;
+
+    &.right {
+      border: 1px solid green;
+      color: green;
+      box-shadow: 0px 0px 5px green;
+    }
+
+    &.wrong {
+      border: 1px solid red;
+      color: red;
+      box-shadow: 0px 0px 5px red;
+    }
+  }
+
+  &[mat-stroked-button] {
+    border: 1px solid #{$primary};
+  }
+}
+
+.case {
+  width: 130px;
+}
+
+:host ::ng-deep {
+  th {
+    text-align: center !important;
+  }
+
+  td.mat-cell, th.mat-header-cell {
+    color: #{$text-dark};
+    border-bottom-color: #{$text-dark};
+  }
+  
+  tr:last-child {
+    td.mat-cell {
+      border-bottom-color: transparent;
+    }
+  }
+  table, table * {
+    background: transparent;
+  }
+}
+
+table {
+  box-shadow: 5px 18px 7px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+mat-icon {
+  vertical-align: sub;
+  margin-left: 5px;
+}

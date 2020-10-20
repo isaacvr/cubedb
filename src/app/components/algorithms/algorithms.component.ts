@@ -203,36 +203,39 @@ export class AlgorithmsComponent implements OnDestroy {
 
     for (let i = 0, maxi = list.length; i < maxi; i += 1) {
       let e = list[i];
-      if ( this.type < 2 ) {
+      if ( this.type < 2 ) { 
         this.cards.push({
           title: e.name,
           cube: LOADING_IMG,
+          ready: false,
           route: '/algorithms/' + e.parentPath + '/' + e.shortName
         });
       } else {
         e.cube = LOADING_IMG;
+        e.ready = false;
         e.parentPath = '/algorithms/' + e.parentPath;
         this.cases.push(e);
       }
     }
-
-    let obs = generateCubeBundle(cubes);
-
-    setTimeout(() => {
-      let idx = 0;
-      obs.subscribe({
-        next: (img) => {
-          if ( this.type < 2 ) {
-            // console.log(idx, 'of', this.cards.length);
-            this.cards[idx].cube = img;
-          } else {
-            // console.log(idx, 'of', this.cases.length);
-            this.cases[idx].cube = img;
-          }
-
-          idx += 1;
+    
+    let idx = 0;
+    
+    let subs = generateCubeBundle(cubes).subscribe({
+      next: (img) => {
+        if ( this.type < 2 ) {
+          // console.log(idx, 'of', this.cards.length);
+          this.cards[idx].cube = <string>img;
+          this.cards[idx].ready = true;
+        } else {
+          // console.log(idx, 'of', this.cases.length);
+          this.cases[idx].cube = <string>img;
+          this.cases[idx].ready = true;
         }
-      });
-    }, 10);
+
+        idx += 1;
+      },
+      complete: () => { subs.unsubscribe(); }
+    });//*/
+
   }
 }

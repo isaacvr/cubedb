@@ -91,15 +91,19 @@
     "typescript": "3.9.7",
     "wait-on": "5.0.1",
     "webdriver-manager": "12.1.7",
-    "zone.js": "0.11.1"
+    "zone.js": "0.11.1",
+    "ngx-echarts": "5.0.0"
   },
   "engines": {
     "node": ">=10.13.0"
   },
   "dependencies": {
-    "npm": "6.14.8",
-    "xml2js": "0.4.23",
+    "chart.js": "2.9.3",
+    "cube-solver": "2.4.0",
+    "nedb": "1.8.0",
+    "ng2-charts": "2.4.2",
+    "scrambler-util": "0.2.9",
     "three": "0.120.1",
-    "nedb": "1.8.0"
+    "xml2js": "0.4.23"
   }
 }

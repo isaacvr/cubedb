@@ -1,5 +1,4 @@
 import { CubeView, PuzzleType } from '../types';
-import { Puzzle } from '../classes/puzzle/puzzle';
 import { Sticker } from './../classes/puzzle/Sticker';
 import { Piece } from './../classes/puzzle/Piece';
 import { Vector3D } from '../classes/vector3d';
@@ -8,6 +7,7 @@ import { CubeMode } from "../constants/constants";
 export interface Card {
   title: string;
   cube: string;
+  ready: boolean;
   route: string;
   timer?: boolean;
 }
@@ -40,6 +40,7 @@ export interface Algorithm {
   solutions?: Solution[];
   mode: CubeMode;
   cube ?: string;
+  ready: boolean;
   tips ?: number[];
   parentPath ?: string;
   view?: CubeView;
@@ -73,4 +74,31 @@ export interface PuzzleOptions {
 export interface Tutorial {
   title: string;
   puzzle: string;
+}
+
+export enum Penalty {
+  NONE = 0, P2 = 1, DNF = 2
+}
+
+export interface Solve {
+  time: number;
+  date: number;
+  scramble: string;
+  penalty: Penalty;
+  comments?: string;
+  selected: boolean;
+  mode?: string;
+  len?: number;
+  prob?: number;
+}
+
+export interface TimerPuzzleCategory {
+  [name: string]: Solve[];
+}
+
+export interface TimerPuzzle {
+  puzzle: string;
+  title: string;
+  categoriesStr: string[];
+  categories: TimerPuzzleCategory;
 }

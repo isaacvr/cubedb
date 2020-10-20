@@ -1,3 +1,18 @@
+@import "../../../styleVariables.scss";
+
 .nshow {
   display: none;
+}
+
+:host ::ng-deep {
+  td.mat-cell, th.mat-header-cell {
+    color: #{$text-dark};
+    border-bottom-color: #{$text-dark};
+  }
+}
+
+.image-placeholder {
+  span {
+    color: #{$text-dark};
+  }
 }

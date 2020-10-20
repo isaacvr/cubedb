@@ -17,6 +17,10 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatStepperModule } from '@angular/material/stepper';
 
 @NgModule({
   exports: [
@@ -38,6 +42,10 @@ import { MatChipsModule } from '@angular/material/chips';
     MatProgressSpinnerModule,
     MatAutocompleteModule,
     MatChipsModule,
+    MatTabsModule,
+    MatProgressBarModule,
+    MatDividerModule,
+    MatStepperModule,
   ]
 })
 export class MatComponentsModule { }

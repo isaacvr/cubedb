@@ -1,0 +1,71 @@
+@import "../../../styleVariables.scss";
+
+:host ::ng-deep {
+  .mat-form-field-infix {
+    width: max-content;
+  }
+
+  .mat-cell {
+    padding-right: 24px;
+  }
+
+  th {
+    text-align: center !important;
+  }
+
+  td.mat-cell, th.mat-header-cell {
+    color: #{$text-dark};
+    border-bottom-color: #{$text-dark};
+  }
+  
+  tr:last-child {
+    td.mat-cell {
+      border-bottom-color: transparent;
+    }
+  }
+  table, table * {
+    background: transparent;
+  }
+}
+
+::ng-deep {
+  .cdk-overlay-pane {
+    position: absolute;
+    height: var(--panel-height);
+  }
+
+  .mat-dialog-container {
+    background-color: #{$bgcard};
+    padding: var(--panel-padding);
+    color: #{$text-dark};
+  }
+}
+
+.element-row {
+  cursor: pointer;
+  transition: all 300ms;
+
+  &:hover {
+    background-color: #888;
+  }
+}
+
+mat-divider {
+  border-top-color: #{$text-dark};
+}
+
+.solve-detail {
+  .solve-time {
+    width: max-content;
+    display: inline-block;
+    margin: 5px;
+  }
+
+  .solve-date {
+    float: right;
+
+    mat-icon {
+      vertical-align: bottom;
+    }
+  }
+}

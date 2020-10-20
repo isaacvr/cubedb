@@ -62,10 +62,10 @@
       (click)="save(title.value, scramble.value, link.value, cubeType.value, cubeMode.value, order.value, timer.checked)">Save</button>
   </div>
   <ul class="card-container">
-    <mat-card *ngFor="let card of cards" class="card">
+    <mat-card *ngFor="let card of cards" class="card" [routerLink]="card.route">
       <mat-card-content>
         <a [routerLink]="card.route">
-          <img [src]="card.cube" class="puzzle-img">
+          <img [src]="card.cube" class="puzzle-img" [class.ready]="card.ready">
           <img *ngIf="card.timer" src="./assets/timer.svg" class="timer">
         </a>
       </mat-card-content> 

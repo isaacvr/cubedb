@@ -1,19 +1,18 @@
+import { SettingsComponent } from './components/settings/settings.component';
+import { TimerComponent } from './components/timer/timer.component';
 import { TutorialParserComponent } from './components/tutorial-parser/tutorial-parser.component';
 import { TutorialsComponent } from './components/tutorials/tutorials.component';
 import { AlgorithmsComponent } from './components/algorithms/algorithms.component';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
+import { PllTrainerComponent } from './components/pll-trainer/pll-trainer.component';
 
 const routes: Routes = [
   {
     path: '',
     component: HomeComponent
   },
-  // {
-  //   path: 'algorithms',
-  //   component: AlgorithmsComponent
-  // },
   {
     matcher: (url) => {
       // console.log('URL: ', url);
@@ -39,19 +38,19 @@ const routes: Routes = [
   {
     path: 'tutorials/:puzzle/:tutorial',
     component: TutorialParserComponent
-  }
-  // {
-  //   path: 'algorithms/:puzzle/:group',
-  //   component: AlgorithmsComponent
-  // },
-  // {
-  //   path: 'algorithms/:puzzle/:group/:algorithm',
-  //   component: AlgorithmsComponent
-  // },
-  // {
-  //   path: 'algorithms/:puzzle/:group/:subgroup/:algorithm',
-  //   component: AlgorithmsComponent
-  // },
+  },
+  {
+    path: 'timer',
+    component: TimerComponent
+  },
+  {
+    path: 'pll-trainer',
+    component: PllTrainerComponent
+  },
+  {
+    path: 'settings',
+    component: SettingsComponent
+  },
 ];
 
 @NgModule({
