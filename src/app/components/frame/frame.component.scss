@@ -1,3 +1,7 @@
+* {
+  user-select: none;
+}
+
 img, h4 {
   display: inline;
   vertical-align: middle;
@@ -31,4 +35,10 @@ mat-icon {
   height: 100%;
   padding: 0px 10px;
   cursor: pointer;
+}
+
+.time {
+  margin-top: 6px;
+  vertical-align: top;
+  display: inline-block;
 }

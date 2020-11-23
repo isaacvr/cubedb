@@ -1,0 +1,29 @@
+@import '../../../styleVariables.scss';
+
+::ng-deep {
+  .mat-tab-label-container {
+    transition: 800ms;
+  }
+
+  .mat-tab-body-wrapper {
+    height: 100%;
+  }
+
+  .mat-tab-label {
+    width: 33.33333333%;
+    background-color: #{$light};
+    color: #{$text-dark};
+  }
+
+  .mat-select-value-text, .mat-option {
+    color: #{$text-dark};
+  }
+
+  .mat-select-panel {
+    background-color: #{$bgcard};
+  }
+}
+
+table {
+  width: 100%;
+}

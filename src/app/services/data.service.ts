@@ -1,12 +1,11 @@
-import { Solve, Penalty } from './../interfaces/interfaces';
 import { Subject, Observable } from 'rxjs';
 import { RawCard } from '../interfaces/interfaces';
 import { Tutorial } from '../interfaces/interfaces';
 import { Injectable, NgZone } from '@angular/core';
-import { Algorithm } from '../interfaces/interfaces';
+import { Algorithm, Solve, Session } from '../interfaces/interfaces';
 import { IpcRenderer, BrowserWindow } from 'electron';
 import { HttpClient } from '@angular/common/http';
-import { records } from './data';
+// import { records } from './data';
 
 @Injectable({
   providedIn: 'root'
@@ -17,16 +16,16 @@ export class DataService {
   algSub: Subject< Algorithm[] >;
   cardSub: Subject< RawCard[] >;
   tutSub: Subject< Tutorial[] >;
-  recSub: Subject< Solve[] >;
-  scrambleSub: Subject< any[] >;
+  solveSub: Subject< { type: string, data: Solve[] } >;
+  sessSub: Subject< { type: string, data: Session | Session[] } >;
 
   constructor(private http: HttpClient, private ngZone: NgZone) {
     this.algSub = new Subject< Algorithm[] >();
     this.cardSub = new Subject< RawCard[] >();
     this.tutSub = new Subject< Tutorial[] >();
-    this.recSub = new Subject< Solve[] >();
-    this.scrambleSub = new Subject< any[] >();
-    
+    this.solveSub = new Subject< { type: string, data: Solve[] } >();
+    this.sessSub = new Subject< { type: string, data: Session[] } >();
+  
     let electron = window.require('electron');
     
     this.ipc = electron.ipcRenderer;
@@ -54,15 +53,21 @@ export class DataService {
       });
     });
 
-    this.ipc.on('scramble', (event, tuts) => {
+    this.ipc.on('solves', (event, recs) => {
       this.ngZone.run(() => {
-        this.scrambleSub.next(tuts);
+        this.solveSub.next({
+          type: recs[0],
+          data: recs[1]
+        });
       });
     });
 
-    this.ipc.on('records', (event, recs) => {
+    this.ipc.on('session', (event, sess) => {
       this.ngZone.run(() => {
-        this.recSub.next(recs);
+        this.sessSub.next({
+          type: sess[0],
+          data: sess[1]
+        });
       });
     });
 
@@ -88,23 +93,48 @@ export class DataService {
     this.ipc.send('scramble', scramble);
   }
 
-  getRecords() {
-    // this.ipc.send('records');
-    this.recSub.next(records.split('\n').map(e => e.trim()).filter(e => e != '').map(e => {
-      let arr: string[] = JSON.parse('[' + e.replace(/;/g, ',') + ']');
-      return {
-        time: +arr[2],
-        date: +arr[3],
-        scramble: arr[4],
-        penalty: (arr[5] === "0") ? Penalty.NONE : (arr[5] === "1") ? Penalty.P2 : Penalty.DNF,
-        comments: arr[6],
-        selected: false
-      };
-    }));
+  getSolves() {
+    this.ipc.send('get-solves');
+    // this.solveSub.next(records.split('\n').map(e => e.trim()).filter(e => e != '').map(e => {
+    //   let arr: string[] = JSON.parse('[' + e.replace(/;/g, ',') + ']');
+    //   return {
+    //     session: 'b19ahf90719fed9787c',
+    //     time: +arr[2],
+    //     date: +arr[3],
+    //     scramble: arr[4],
+    //     penalty: (arr[5] === "0") ? Penalty.NONE : (arr[5] === "1") ? Penalty.P2 : Penalty.DNF,
+    //     comments: arr[6],
+    //     selected: false
+    //   };
+    // }));
+  }
+
+  addSolve(s: Solve) {
+    this.ipc.send('add-solve', s);
   }
 
   updateSolve(s: Solve) {
-    // this.ipc.send('updateSolve', s);
+    this.ipc.send('update-solve', s);
+  }
+
+  removeSolves(s: Solve[]) {
+    this.ipc.send('remove-solves', s.map(e => e._id));
+  }
+
+  getSessions() {
+    this.ipc.send('get-sessions');
+  }
+
+  addSession(s: Session) {
+    this.ipc.send('add-session', s);
+  }
+
+  removeSession(s: Session) {
+    this.ipc.send('remove-session', s);
+  }
+
+  renameSession(s: Session) {
+    this.ipc.send('rename-session', s);
   }
 
   minimize() {

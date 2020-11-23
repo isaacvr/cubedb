@@ -1,19 +1,13 @@
 <div class="container-mini">
   <h1>Settings</h1>
   <mat-divider></mat-divider>
-  <h4>Colors</h4>
+  <h4 style="text-decoration: line-through;">Colors</h4>
   <mat-divider></mat-divider>
   <h4>Theme</h4>
-  <!-- <div>
-    <input [(ngModel)]="from" type="color">
-    <input [(ngModel)]="to" type="color">
-    <button (click)="setBackground()">Set</button>
-  </div> -->
-  <!-- <mat-form-field> -->
   <ul class="card-container no-grid">
     <mat-card *ngFor="let theme of themesPrev" class="card" (click)="selectTheme(theme.code)">
       <mat-card-content>
-        <img [src]="theme.img" class="puzzle-img ready" alt="">
+        <img (dragstart)="false" [src]="theme.img" class="puzzle-img ready" alt="">
       </mat-card-content> 
       <mat-card-footer>{{theme.name}}</mat-card-footer>
     </mat-card>
@@ -32,4 +26,5 @@
       <mat-option *ngFor="let font of fontNames" [value]="font[0]">{{font[1]}}</mat-option>
     </mat-select>
   </mat-form-field>
+  <span class="clock">0:00</span>
 </div>

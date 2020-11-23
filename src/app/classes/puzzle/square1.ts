@@ -1,23 +1,22 @@
+import { Vector3 } from 'three';
 import { Piece } from './Piece';
 import { RIGHT, LEFT, BACK, UP, FRONT, DOWN } from './../vector3d';
 import { Vector3D, CENTER } from '../../classes/vector3d';
 import { PuzzleInterface } from './../../interfaces/interfaces';
 import { STANDARD_PALETTE } from '../../constants/constants';
 import { Sticker } from './Sticker';
-import { assignColors, getAllStickers } from './puzzleUtils';
+import { assignColors, getAllStickers, roundCorners } from './puzzleUtils';
 
 export function SQUARE1(): PuzzleInterface {
-
-  // The puzzle is defined as an object on the TTk.Puzzle namespace
   const sq1: PuzzleInterface = {
-    pieces: [],               /// Sticker's points
-    moves: {},                /// Define every move
-    palette: {},              /// Color Palette
-    rotation: {},             /// Initial rotation
+    pieces: [],
+    palette: STANDARD_PALETTE,
+    rotation: {},
     center: new Vector3D(0, 0, 0),
     faceVectors: [],
     getAllStickers: null,
-    faceColors: [ 'y', 'o', 'g', 'w', 'r', 'b' ]
+    faceColors: [ 'w', 'b', 'r', 'y', 'g', 'o' ],
+    move: () => true
   };
 
   sq1.getAllStickers = getAllStickers.bind(sq1);
@@ -27,8 +26,9 @@ export function SQUARE1(): PuzzleInterface {
   const L1 = 2 * L * Math.sqrt(2) / 2;
   const PI = Math.PI;
   const PI_2 = PI / 2;
+  const PI_6 = PI / 6;
 
-  const BIG = L1 * Math.sin( PI / 6 ) / Math.sin( 7 * PI / 12 );
+  const BIG = L1 * Math.sin( PI_6 ) / Math.sin( 7 * PI / 12 );
 
   let pieceBig = new Piece([
     new Sticker([
@@ -45,7 +45,7 @@ export function SQUARE1(): PuzzleInterface {
     ]),
   ]);
 
-  pieceBig.stickers.push( pieceBig.stickers[0].add( DOWN.mul(L23) ) );
+  pieceBig.stickers.push( pieceBig.stickers[0].add( DOWN.mul(L23) ).reverse() );
   pieceBig.stickers.push(
     pieceBig.stickers[1]
     .rotate(LEFT.add(BACK).add(UP).mul(L), DOWN, PI_2)
@@ -54,10 +54,10 @@ export function SQUARE1(): PuzzleInterface {
     
   let pieceSmall = new Piece([
     new Sticker([
-      LEFT.add(UP).add(BACK).mul(L).add( RIGHT.mul(BIG) ),
       RIGHT.add(UP).add(BACK).mul(L).add( LEFT.mul(BIG) ),
       RIGHT.add(UP).add(BACK).mul(L).add( LEFT.mul(BIG) ).add( DOWN.mul(L23) ),
       LEFT.add(UP).add(BACK).mul(L).add( RIGHT.mul(BIG) ).add( DOWN.mul(L23) ),
+      LEFT.add(UP).add(BACK).mul(L).add( RIGHT.mul(BIG) ),
     ]),
     new Sticker([
       LEFT.add(UP).add(BACK).mul(L).add( RIGHT.mul(BIG) ),
@@ -66,6 +66,9 @@ export function SQUARE1(): PuzzleInterface {
     ]),
   ]);
 
+  pieceBig.stickers.forEach(s => { s.vecs = [ UP.clone() ]; });
+  pieceSmall.stickers.forEach(s => { s.vecs = [ UP.clone() ]; });
+  
   let mid = new Piece([
     new Sticker([
       LEFT.add(BACK).add(UP).mul(L).add( DOWN.mul(L23) ),
@@ -102,9 +105,13 @@ export function SQUARE1(): PuzzleInterface {
       LEFT.add(FRONT).add(DOWN).mul(L).add( UP.mul(L23) ),
       LEFT.add(FRONT).add(DOWN).mul(L).add( UP.mul(L23) ).add( RIGHT.mul(BIG) ),
       RIGHT.add(BACK).add(DOWN).mul(L).add( UP.mul(L23) ).add( LEFT.mul(BIG) ),
-    ]),
+    ]).reverse(),
   ]);
 
+  mid.stickers.forEach(s => {
+    s.vecs = [ mid.stickers[2].getOrientation().mul(-1), UP.clone() ];
+  });
+  
   for (let i = 0; i < 4; i += 1) {
     sq1.pieces.push( pieceSmall.rotate(CENTER, UP, i * PI_2) );
     sq1.pieces.push( pieceBig.rotate(CENTER, UP, i * PI_2) );
@@ -114,22 +121,82 @@ export function SQUARE1(): PuzzleInterface {
     sq1.pieces.push( sq1.pieces[i].rotate(CENTER, RIGHT, PI) );
   }
 
-  sq1.pieces.push(mid);
-  sq1.pieces.push(mid.rotate(CENTER, UP, PI));
+  let pieces = sq1.pieces;
+  
+  pieces.push(mid);
+  pieces.push(mid.rotate(CENTER, UP, PI));
 
-  sq1.moves = {
-    "/": { plane: mid.stickers[2].clone().points, angle: 180 },
-    "U": { plane: pieceBig.stickers[2].clone().points, angle: -30 },
-    "D": { plane: mid.stickers[5].clone().points.reverse(), angle: -30 },
-  }
+  let planes = [
+    mid.stickers[2].clone().points,
+    pieceBig.stickers[2].clone().points,
+    mid.stickers[5].clone().points.reverse()
+  ];
 
-  // Colours to use for facelets
-  sq1.palette = STANDARD_PALETTE;
+  sq1.move = function(moves: any[]) {
+    for (let m = 0, maxm = moves.length; m < maxm; m += 1) {
+      let mv = moves[m];
+      let moveId = mv[0];
+      let turns = mv[1];
+      const pts1 = planes[moveId];
+      const u = Vector3D.cross(pts1[0], pts1[1], pts1[2]).unit();
+      const mu = u.mul(-1);
+      const ang = PI_6 * turns;
 
-  // Initial rotation
+      let buff = [];
+
+      for (let i = 0, maxi = pieces.length; i < maxi; i += 1) {
+        let d = pieces[i].direction(pts1[0], pts1[1], pts1[2], false, (x: Sticker) => x.color != 'x' && x.color != 'd');
+
+        if ( d === 0 ) {
+          console.log("Invalid move. Piece intersection detected.", "/UD"[moveId], turns, mv);
+          console.log("Piece: ", i, pieces[i], pts1);
+          return false;
+        }
+
+        if ( d > 0 ) {
+          buff.push( pieces[i] );
+          // pieces[i].stickers.map(s => s.rotate(CENTER, mu, ang, true));
+        }
+      }
+
+      buff.forEach(p => p.stickers.map(s => s.rotate(CENTER, mu, ang, true)));
+    }
+    return true;
+  };
+
+  sq1.vectorsFromCamera = function(vecs: any[], cam) {
+    return vecs.map(e => {
+      let vp = new Vector3(e.x, e.y, e.z).project(cam);
+      return new Vector3D(vp.x, -vp.y, 0);
+    });
+  };
+
+  sq1.toMove = function(piece: Piece, sticker: Sticker, dir: Vector3D) {
+    let ang = (sticker.vecs[0].cross( UP ).abs() < 1e-6) ? PI_6 : PI;
+    let toMovePieces = [];
+
+    if ( ang > PI_6 && dir.cross(UP).abs() > 1e-6 ) {
+      if ( sq1.move( [ [0, 6] ] ) ) {
+        sq1.move( [ [0, 6] ] );
+        toMovePieces = pieces.filter(p => p.direction1(dir.mul(0.06), dir) === 0);
+      }
+    } else {
+      let mc = sticker.updateMassCenter();
+      let isBig = ang > PI_6;
+      toMovePieces = pieces.filter(p => {
+        return isBig ? p.direction1(mc, dir) === 0 : p.direction1(mc, dir) >= 0
+      });
+    }
+
+    return {
+      pieces: toMovePieces,
+      ang
+    };
+  };
+
   sq1.rotation = {
-    x: Math.PI / 6,
-    y: -Math.PI / 4,
+    x: PI_6,
+    y: -PI_6,
     z: 0,
   };
 
@@ -138,6 +205,7 @@ export function SQUARE1(): PuzzleInterface {
   ];
 
   assignColors(sq1, sq1.faceColors);
+  roundCorners(sq1, null, 0.95);
 
   return sq1;
 

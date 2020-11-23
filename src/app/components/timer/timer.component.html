@@ -1,19 +1,25 @@
 <div class="global-container" [class.running]="state >= 3">
   <div class="form-container">
     <div class="row">
+      <mat-icon (click)="editSessions()" matTooltip="Manage sessions" matTooltipHideDelay="100" svgIcon="tune"></mat-icon>
       <mat-form-field>
+        <mat-select [(ngModel)]="session" (selectionChange)="selectedSession()">
+          <mat-option *ngFor="let s of sessions;" [value]="s">{{s.name}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field *ngIf="tab == 0">
         <mat-select [(value)]="group" (selectionChange)="selectedGroup()">
           <mat-option *ngFor="let p of groups; let i = index;" [value]="i">
             {{p}}
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field>
+      <mat-form-field *ngIf="tab == 0">
         <mat-select [(value)]="mode" (selectionChange)="selectedMode()">
           <mat-option *ngFor="let m of modes;" [value]="m">{{m[0] | uppercase}}</mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field *ngIf="filters.length > 0">
+      <mat-form-field *ngIf="filters.length > 0 && tab == 0">
         <mat-select [(value)]="prob" (selectionChange)="selectedFilter()">
           <mat-option [value]="-1">{{'RANDOM' | uppercase}}</mat-option>
           <mat-option *ngFor="let f of filters; let i = index;" [value]="i">{{f | uppercase}}</mat-option>
@@ -32,9 +38,9 @@
     <button mat-button (click)="selectInterval()"> <mat-icon svgIcon="arrow-expand-horizontal"></mat-icon> Select Interval</button>
     <button mat-button (click)="selectInvert()"> <mat-icon svgIcon="select-inverse"></mat-icon> Invert Selection</button>
     <button mat-button (click)="selectNone()"> <mat-icon svgIcon="select-off"></mat-icon> Cancel </button>
-    <button mat-button > <mat-icon svgIcon="delete"></mat-icon> Delete</button>
+    <button mat-button (click)="deleteSelected()"> <mat-icon svgIcon="delete"></mat-icon> Delete</button>
   </div>
-  <mat-tab-group headerPosition="below" [(selectedIndex)]="tab">
+  <mat-tab-group headerPosition="below" [(selectedIndex)]="tab" (selectedIndexChange)="handleTab($event)">
     <mat-tab>
       <ng-template mat-tab-label>
         <mat-icon svgIcon="timer"></mat-icon>
@@ -48,7 +54,7 @@
         </span>
         <mat-icon matTooltip="Reload" matTooltipHideDelay="100" (click)="initScrambler()" matSuffix svgIcon="refresh"></mat-icon>
         <mat-icon matTooltip="Edit" (click)="editScramble()" matTooltipHideDelay="100" matSuffix svgIcon="pencil-outline"></mat-icon>
-        <mat-icon matTooltip="Use old scramble" (click)="oldScrambles()" matTooltipHideDelay="100" matSuffix svgIcon="calendar-text-outline"></mat-icon>
+        <mat-icon *ngIf="solves.length > 0" matTooltip="Use old scramble" (click)="oldScrambles()" matTooltipHideDelay="100" matSuffix svgIcon="calendar-text-outline"></mat-icon>
       </div>
       <div class="clock">
         <span
@@ -56,16 +62,17 @@
           [class.prevention]="state === 2"
           [class.ready]="ready">{{time | timer:decimals:false}}</span>
         <div class="solve-control" *ngIf="state === 1" [class.show]="state === 1">
-          <mat-icon (click)="deleteLastSolve()" matTooltip="Delete" matTooltipHideDelay="100" svgIcon="close"></mat-icon>
+          <mat-icon (click)="delete([lastSolve])" matTooltip="Delete" matTooltipHideDelay="100" svgIcon="close"></mat-icon>
           <mat-icon [class.highlight]="lastSolve.penalty === 2" (click)="dnf()"  matTooltip="DNF" matTooltipHideDelay="100" svgIcon="thumb-down"></mat-icon>
           <mat-icon [class.highlight]="lastSolve.penalty === 1" (click)="plus2()" matTooltip="+2" matTooltipHideDelay="100" svgIcon="flag-outline"></mat-icon>
-          <mat-icon (click)="addComment()" matTooltip="Comment" matTooltipHideDelay="100" svgIcon="comment-plus-outline"></mat-icon>
+          <mat-icon (click)="editSolve(lastSolve)" matTooltip="Comment" matTooltipHideDelay="100" svgIcon="comment-plus-outline"></mat-icon>
         </div>
       </div>
       <div class="cross-hint" [class.isVisible]="hintDialog && state <= 2">
         <table [class.nshow]="!hint">
           <tr><td>Cross</td> <td>{{cross}}</td></tr>
           <tr><td>XCross</td> <td>{{xcross}}</td></tr>
+          <tr *ngIf="Ao5"><td>Next Ao5</td> <td>Between {{Ao5[0] | timer:false:true}} and {{Ao5[1] | timer:false:true}}</td></tr>
         </table>
         <mat-icon matSuffix [class.nshow]="!hint" svgIcon="lightbulb-on" (click)="hint = !hint"></mat-icon>
       </div>
@@ -138,6 +145,9 @@
           </table>
         </div>
       </div>
+      <div class="preview-container" #prev (click)="prev.classList.toggle('expanded')">
+        <img (dragstart)="false" class="preview" [src]="preview">
+      </div>
     </mat-tab>
     <mat-tab>
       <ng-template mat-tab-label>
@@ -150,19 +160,20 @@
             <button mat-menu-item (click)="editSolve(solve)">Edit</button>
           </ng-template>
         </mat-menu>
-        <div
-          *ngFor="let solve of solves; index as i"
-          class="solve-pill"
-          (click)="solveClick(solve)"
-          [class.selected]="solve.selected"
-          [matMenuTriggerFor]="pillMenu"
-          [matMenuTriggerData]="{ solve: solve }">
-          <div class="date">{{ solve.date | date:'dd/MM' }}</div>
-          <span *ngIf="solve.penalty === 2" class="dnf">DNF</span>
-          <span class="time">{{ solve.time | timer:true }}</span>
-          <span *ngIf="solve.penalty === 1" class="p2">+2</span>
-          <mat-icon  *ngIf="solve.comment" class="comment" svgIcon="comment-plus-outline"></mat-icon>
-        </div>
+        <ng-container *ngFor="let solve of solves; index as i">
+          <div
+            class="solve-pill"
+            (click)="solveClick(solve)"
+            [class.selected]="solve.selected"
+            [matMenuTriggerFor]="pillMenu"
+            [matMenuTriggerData]="{ solve: solve }">
+            <div class="date">{{ solve.date | date:'dd/MM' }}</div>
+            <span *ngIf="solve.penalty === 2" class="dnf">DNF</span>
+            <span class="time">{{ solve.time | timer:true }}</span>
+            <span *ngIf="solve.penalty === 1" class="p2">+2</span>
+            <mat-icon  *ngIf="solve.comments" class="comment" svgIcon="comment-plus-outline"></mat-icon>
+          </div>
+        </ng-container>
       </div>
     </mat-tab>
     <mat-tab>

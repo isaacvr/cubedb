@@ -1,15 +1,17 @@
+import { Subscription } from 'rxjs';
+import { DataService } from './../../services/data.service';
 import { generateCubeBundle } from 'app/cube-drawer';
 import { Router } from '@angular/router';
-import { CubeMode, LOADING_IMG } from './../../constants/constants';
-import { PuzzleTypeStr, PuzzleType, CubeView } from './../../types/index';
+import { CubeMode } from './../../constants/constants';
 import { Puzzle } from './../../classes/puzzle/puzzle';
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
+
+declare type CubeType = Puzzle | { type: 'arrow', text: string } | { tp: 'arrow', tx: string };
 
 interface BlockType {
   type: "title" | "text" | "cubes";
   content ?: string;
-  cubes?: Puzzle[];
-  imgs?: string[];
+  cubes?: CubeType[];
 }
 
 @Component({
@@ -17,55 +19,79 @@ interface BlockType {
   templateUrl: './tutorial-parser.component.html',
   styleUrls: ['./tutorial-parser.component.scss']
 })
-export class TutorialParserComponent {
+export class TutorialParserComponent implements OnDestroy {
   title: string;
   blocks: BlockType[];
-
-  constructor(private router: Router) {
-    let sheet = `[{"type":"title","content":"2x2x2 Beginner's tutorial"},{"type":"text","content":"This is an example test"},{"type":"cubes","content":[{"type":"rubik","order":2,"mode":"NORMAL","view":"trans","tips":[1,1,2,0],"scramble":"R U D B F'"},{"type":"$","scramble":"R U'","tips":[]},{"type":"rubik","order":2,"mode":"NORMAL","view":"trans","tips":[],"scramble":""}]}]`;
+  _id: string;
+  sub: Subscription;
+  constructor(private dataService: DataService, private router: Router) {
 
     this.title = '';
     this.blocks = [];
 
-    this.init(sheet);
+    let url = decodeURIComponent( this.router.url );
+    this.title = url.split('?')[0].split('/').pop();
+    this._id = url.split("=")[1];
+    
+    this.sub = this.dataService.tutSub.subscribe({
+      next: (list) => {
+        let current = list.find(t => t._id == this._id);
+        if ( current ) {
+          this.init( current.content );
+        }
+      }
+    });
+    
+    this.dataService.getTutorials();
 
   }
 
+  ngOnDestroy() {
+    this.sub.unsubscribe();
+  }
 
-  init(sheet: string) {
-    let arr = <any[]>JSON.parse(sheet);
-    this.title = this.router.url.split('/').pop();
+  init(sheet: any) {
+    // let arr = <any[]>JSON.parse(sheet);
+    let arr = sheet;
 
     this.blocks = [];
     let pos = [];
     let allCubes: Puzzle[] = [];
 
     for (let i = 0, l = 0, maxi = arr.length; i < maxi; i += 1) {
-      switch( arr[i].type ) {
+      switch( (arr[i].type || arr[i].t ) ) {
+        case "tl":
         case "title": {
-          this.title = arr[i].content;
+          this.title = (arr[i].content || arr[i].c);
           break;
         }
+        case "s":
+        case "tx":
+        case "subtitle":
         case "text": {
           this.blocks.push({
-            type: 'text',
-            content: arr[i].content,
-            cubes: [],
-            imgs: []
+            type: (arr[i].type || arr[i].t),
+            content: (arr[i].content || arr[i].c),
+            cubes: []
           });
           l += 1;
           break;
         }
+        case "c":
         case "cubes": {
-          let cubes: Puzzle[] = [];
-
-          for (let j = 0, maxj = arr[i].content.length; j < maxj; j += 1) {
-            let cnt = arr[i].content[j];
-            switch( cnt.type ) {
+          let cubes: CubeType[] = [];
+          let content = arr[i].content || arr[i].c;
+          for (let j = 0, maxj = content.length; j < maxj; j += 1) {
+            let cnt = content[j];
+            switch( (cnt.type || cnt.t ) ) {
               case '$': {
-                if ( cubes.length > 0 ) {
-                  let cp = cubes[ cubes.length - 1 ].clone();
+                if ( allCubes.length > 0 ) {
+                  let lastCube = allCubes[ allCubes.length - 1 ];
+                  let newMode: CubeMode = cnt.mode ? CubeMode[ (<string> cnt.mode) ] : lastCube.mode;
+                  let cp = lastCube.clone(newMode);
                   cp.move(cnt.scramble);
+                  cp.p.rotation = cnt.rotation || cp.p.rotation;
+                  cp.rotation = cp.p.rotation;
                   cubes.push(cp);
                   allCubes.push(cp);
                   pos.push([l, j]);
@@ -73,16 +99,21 @@ export class TutorialParserComponent {
                 break;
               }
               case 'arrow': {
+                cubes.push({
+                  type: 'arrow',
+                  text: (cnt.text || cnt.tt),
+                });
                 break;
               }
               default: {
-                let p = Puzzle.fromSequence(cnt.scramble, {
-                  type: cnt.type,
+                let p = Puzzle.fromSequence((cnt.scramble || cnt.s), {
+                  type: (cnt.type || cnt.t),
                   order: [cnt.order],
                   mode: CubeMode[ <string> cnt.mode ],
-                  tips: cnt.tips,
-                  view: cnt.view
+                  tips: cnt.tips || [],
+                  view: cnt.view,
                 });
+                p.rotation = cnt.rotation || cnt.r || p.rotation;
                 cubes.push(p);
                 allCubes.push(p);
                 pos.push([l, j]);
@@ -92,8 +123,7 @@ export class TutorialParserComponent {
 
           this.blocks.push({
             type: 'cubes',
-            cubes: cubes,
-            imgs: [],
+            cubes,
           });
           l += 1;
           break;
@@ -101,16 +131,8 @@ export class TutorialParserComponent {
       }
     }
 
-    let subs = generateCubeBundle(allCubes, 150, true).subscribe({
-      next: (str: string[]) => {
-        for (let i = 0, maxi = str.length; i < maxi; i += 1) {
-          let p = pos[i];
-          this.blocks[ p[0] ].imgs[ p[1] ] = str[i];
-        }
-      },
-      complete: () => {
-        subs.unsubscribe();
-      }
+    let subs = generateCubeBundle(allCubes, 150, false, true).subscribe({
+      complete: () => { subs.unsubscribe(); }
     });
   }
 }

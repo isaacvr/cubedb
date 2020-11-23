@@ -651,6 +651,8 @@ export function solvFacelet(facelet) {
 }
 
 regScrambler('333', getRandomScramble)
+  ('333oh', getRandomScramble)
+  ('333ft', getRandomScramble)
   ('333fm', getFMCScramble)
   ('edges', getEdgeScramble)
   ('corners', getCornerScramble)

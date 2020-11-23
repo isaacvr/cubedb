@@ -1,6 +1,7 @@
 {
   "productName": "cube-db",
   "appId": "com.isaacvr.cubedb",
+  "compression": "maximum",
   "electronDownload": {
     "cache": "D:\\STUDY\\programacion\\WORK\\CubeDB\\electron-cache",
     "isVerifyChecksum": false,
@@ -19,6 +20,7 @@
         "!package.json",
         "!package-lock.json",
         "!src/",
+        "!scrappers/",
         "!e2e/",
         "!hooks/",
         "!angular.json",
@@ -28,9 +30,9 @@
         "!tslint.json"
     ],
   "win": {
-    "icon": "dist/assets/icons",
+    "icon": "src/assets/icons/icon.ico",
     "target": [
-      "portable"
+      "nsis"
     ]
   },
   "mac": {

@@ -99,11 +99,10 @@
   },
   "dependencies": {
     "chart.js": "2.9.3",
-    "cube-solver": "2.4.0",
+    "chartjs-plugin-zoom": "0.7.7",
     "nedb": "1.8.0",
     "ng2-charts": "2.4.2",
-    "scrambler-util": "0.2.9",
-    "three": "0.120.1",
-    "xml2js": "0.4.23"
+    "ngx-csv-parser": "0.0.6",
+    "three": "0.120.1"
   }
 }

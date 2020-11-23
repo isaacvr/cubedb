@@ -16,3 +16,7 @@
     color: #{$text-dark};
   }
 }
+
+img {
+  user-select: none;
+}

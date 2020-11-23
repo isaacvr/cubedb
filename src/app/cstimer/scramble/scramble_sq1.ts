@@ -211,7 +211,6 @@ function Search_move2string(obj, len) {
     bottom = 0;
   for (let i = len - 1; i >= 0; i--) {
     let val = obj.Search_move[i];
-    //console.log(val);
     if (val > 0) {
       val = 12 - val;
       top = (val > 6) ? (val - 12) : val;
@@ -219,10 +218,10 @@ function Search_move2string(obj, len) {
       val = 12 + val;
       bottom = (val > 6) ? (val - 12) : val;
     } else {
-      let twst = "/";
-      if (i == obj.Search_length1 - 1) {
-        twst = "`/`";
-      }
+      let twst = " /";
+      // if (i == obj.Search_length1 - 1) {
+      //   twst = "`/`";
+      // }
       if (top == 0 && bottom == 0) {
         s += twst;
       } else {
@@ -371,9 +370,7 @@ function Search_solution(obj, c) {
   let shape;
   obj.Search_c = c;
   shape = FullCube_getShapeIdx(c);
-  //console.log(shape);
   for (obj.Search_length1 = ShapePrun[shape]; obj.Search_length1 < 100; ++obj.Search_length1) {
-    //console.log(obj.Search_length1);
     obj.Search_maxlen2 = Math.min(32 - obj.Search_length1, 17);
     if (Search_phase1(obj, shape, ShapePrun[shape], obj.Search_length1, 0, -1)) {
       break;
@@ -593,7 +590,6 @@ function Square_init() {
   depth = 0;
   done = 1;
   while (done < 80640) {
-    //console.log(done);
     inv = depth >= 11;
     find = inv ? -1 : depth;
     check = inv ? depth : -1;
@@ -729,6 +725,7 @@ function square1CubeShapeParityScramble(type, length, cases) {
   let scrambleString = Search_solution(search, FullCube_randomCube(idx));
   return scrambleString;
 }
+
 
 regScrambler('sqrs', square1SolverGetRandomScramble);
 regScrambler('sqrcsp', square1CubeShapeParityScramble, [cspfilter, cspprobs]);

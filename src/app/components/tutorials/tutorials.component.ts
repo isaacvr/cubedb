@@ -22,8 +22,6 @@ export class TutorialsComponent implements OnDestroy {
     this.subscription = this.dataService.tutSub.subscribe(list => {
       this.tutorials = {};
 
-      console.log('LIST', list);
-
       for (let i = 0, maxi = list.length; i < maxi; i += 1) {
         if ( !this.tutorials.hasOwnProperty(list[i].puzzle) ) {
           this.tutorials[ list[i].puzzle ] = [];

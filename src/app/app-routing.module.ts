@@ -1,3 +1,4 @@
+import { ImportExportComponent } from './components/import-export/import-export.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { TimerComponent } from './components/timer/timer.component';
 import { TutorialParserComponent } from './components/tutorial-parser/tutorial-parser.component';
@@ -8,23 +9,23 @@ import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
 import { PllTrainerComponent } from './components/pll-trainer/pll-trainer.component';
 
+export function matcher(url) {
+  if ( url.length >= 1 && url[0].path.match(/^algorithms$/) ) {
+    return {
+      consumed: url,
+    }
+  }
+
+  return null;
+}
+
 const routes: Routes = [
   {
     path: '',
     component: HomeComponent
   },
   {
-    matcher: (url) => {
-      // console.log('URL: ', url);
-      if ( url.length >= 1 && url[0].path.match(/^algorithms$/) ) {
-        // console.log('AUDAISHDAIUSDHSU');
-        return {
-          consumed: url,
-        }
-      }
-
-      return null;
-    },
+    matcher,
     component: AlgorithmsComponent
   },
   {
@@ -51,6 +52,10 @@ const routes: Routes = [
     path: 'settings',
     component: SettingsComponent
   },
+  {
+    path: 'import_export',
+    component: ImportExportComponent
+  }
 ];
 
 @NgModule({

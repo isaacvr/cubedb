@@ -161,6 +161,14 @@ export class Color {
     return '#' + t.map(e => ('00' + e.toString(16)).substr(-2, 2)).join('');
   }
 
+  toRGBStr(): string {
+    return `rgb(${this.color[0]}, ${this.color[1]}, ${this.color[2]})`;
+  }
+
+  toRGBAStr(): string {
+    return `rgba(${this.color[0]}, ${this.color[1]}, ${this.color[2]}, ${~~(this.color[3] * 255) })`;
+  }
+
   toArray(): number[] {
     return this.color.map(e => e);
   }

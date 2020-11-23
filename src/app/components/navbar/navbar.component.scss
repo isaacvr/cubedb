@@ -1,5 +1,9 @@
 @import "../../../styleVariables.scss";
 
+:host {
+  user-select: none;
+}
+
 .navbar {
   margin-top: 40px;
   padding: 0px;

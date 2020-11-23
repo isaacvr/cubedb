@@ -50,9 +50,9 @@ export class ThemeService {
     let rfont = localStorage.getItem('--regular-font');
     let tfont = localStorage.getItem('--timer-font');
 
-    this.setTheme(theme);
-    this.setRegularFont(rfont);
-    this.setTimerFont(tfont);
+    this.setTheme(theme || 'default');
+    this.setRegularFont(rfont || 'roboto');
+    this.setTimerFont(tfont || 'lcd4');
   }
 
   setBackground(from: string, to: string) {

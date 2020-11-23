@@ -1,0 +1,32 @@
+<div class="container-mini">
+  <h2>Import your data from other timers</h2>
+  <mat-divider></mat-divider>
+  <div>
+    <mat-select [(value)]="timer">
+      <mat-option value="csTimer">CsTimer</mat-option>
+      <mat-option value="cubeTimer">Cube Timer</mat-option>
+      <mat-option value="twistyTimer">Twisty Timer</mat-option>
+    </mat-select>
+    <mat-form-field>
+      <input [(ngModel)]="session.name" matInput type="text" placeholder="Session to save it..." autofocus>
+    </mat-form-field>
+    <button mat-stroked-button (click)="file.click()">Upload file</button>
+    <button *ngIf="solves.length > 0 && session.name" (click)="save()" mat-stroked-button>Import</button>
+    <input (change)="parseFile()" hidden type="file" #file placeholder="File...">
+  </div>
+  <div *ngIf="error">ERROR: {{error}}</div>
+  <div *ngIf="message">INFO: {{message}}</div>
+  <div *ngIf="solves.length > 0">
+    <table>
+      <tr>
+        <th>Time</th> <th>Scramble</th> 
+        <!-- <th>Mode</th> -->
+      </tr>
+      <tr *ngFor="let s of solves">
+        <td>{{s.time | timer:false:true}}</td>
+        <td>{{s.scramble}}</td>
+        <!-- <td>{{s.mode}}</td> -->
+      </tr>
+    </table>
+  </div>
+</div>

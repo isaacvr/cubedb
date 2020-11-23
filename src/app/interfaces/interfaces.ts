@@ -1,3 +1,4 @@
+import { Puzzle } from './../classes/puzzle/puzzle';
 import { CubeView, PuzzleType } from '../types';
 import { Sticker } from './../classes/puzzle/Sticker';
 import { Piece } from './../classes/puzzle/Piece';
@@ -6,7 +7,7 @@ import { CubeMode } from "../constants/constants";
 
 export interface Card {
   title: string;
-  cube: string;
+  cube: Puzzle | string;
   ready: boolean;
   route: string;
   timer?: boolean;
@@ -53,14 +54,17 @@ export interface NavigationRoute {
 
 export interface PuzzleInterface {
   pieces: Piece[];
-  moves: any;
   palette: any;
   rotation: any;
   center: Vector3D;
   faceVectors: Vector3D[];
   faceColors: string[];
-  getAllStickers: () => Sticker[];
   dims?: number[];
+  getAllStickers: () => Sticker[];
+  move: (any) => any;
+  toMove?: (...args) => any;
+  vectorsFromCamera?: (...args) => any;
+  raw?: any;
 }
 
 export interface PuzzleOptions {
@@ -72,8 +76,11 @@ export interface PuzzleOptions {
 }
 
 export interface Tutorial {
+  _id: string;
   title: string;
+  titleLower: string;
   puzzle: string;
+  content: any;
 }
 
 export enum Penalty {
@@ -81,15 +88,23 @@ export enum Penalty {
 }
 
 export interface Solve {
+  _id?: any;
   time: number;
   date: number;
   scramble: string;
   penalty: Penalty;
-  comments?: string;
   selected: boolean;
+  session: string;
+  comments?: string;
+  group?: number;
   mode?: string;
   len?: number;
   prob?: number;
+}
+
+export interface Session {
+  _id: string;
+  name: string;
 }
 
 export interface TimerPuzzleCategory {

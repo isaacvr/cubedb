@@ -228,7 +228,7 @@ function pochscramble(x, y) {
 		for (j = 0; j < x; j++) {
 			ret += (j % 2 == 0 ? "R" : "D") + rndEl(["++", "--"]) + " ";
 		}
-		ret += "U" + (ret.endsWith("-- ") ? "'" : "~");
+		ret += "U" + (ret.endsWith("-- ") ? "'" : "");
 	}
 	return ret;
 }
@@ -241,7 +241,7 @@ function carrotscramble(x, y) {
 		for (j = 0; j < x / 2; j++) {
 			ret += rndEl(["+", "-"]) + rndEl(["+", "-"]) + " ";
 		}
-		ret += "U" + rndEl(["'\\n", "~\\n"]);
+		ret += "U" + rndEl(["'\\n", "\\n"]);
 	}
 	return ret;
 }

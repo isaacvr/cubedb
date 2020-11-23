@@ -1,26 +1,46 @@
 <div *ngIf="type == 'edit-scramble'">
   <mat-form-field>
-    <input matInput [(ngModel)]="rawData" type="text" placeholder="New scramble..." size="80">
-  </mat-form-field>
-  <mat-form-field>
-    <mat-checkbox [(ngModel)]="dontCare">Don't Care</mat-checkbox>
+    <input
+      matInput
+      (keyup.enter)="close(rawData)"
+      [(ngModel)]="rawData" type="text" placeholder="New scramble..." size="80">
   </mat-form-field>
   <div>
     <button mat-button (click)="close()">Cancel</button>
-    <button mat-button [disabled]="!validateScramble(rawData)" (click)="close(rawData)">Save</button>
+    <button mat-button (click)="close(rawData)">Save</button>
   </div>
 </div>
 <div *ngIf="type == 'edit-solve'" class="solve-detail">
-  <h2 class="solve-time">{{rawData.time | timer:false:true}}</h2>
+  <h2 class="solve-time">{{rawData.time | timer:false:true}}
+    <span *ngIf="rawData.penalty == 1" class="penalty">+2</span>
+    <span *ngIf="rawData.penalty == 2" class="penalty">DNF</span>
+  </h2>
   <span class="solve-date">
     <mat-icon svgIcon="calendar"></mat-icon> {{rawData.date | date:'dd/MM/yyyy HH:MM'}}
   </span>
   <mat-divider></mat-divider>
   <table class="algorithm-container light">
-    <tr><td><mat-icon svgIcon="comment"></mat-icon></td> <td>{{rawData.comment}}</td></tr>
-    <tr><td><mat-icon svgIcon="dice"></mat-icon></td> <td>{{rawData.scramble}}</td></tr>
+    <tr><td><mat-icon svgIcon="dice-5"></mat-icon></td><td>{{rawData.scramble}}</td></tr>
+    <tr><td colspan="2"><img (dragstart)="false" [src]="preview" class="preview"></td></tr>
+    <tr><td><mat-icon svgIcon="comment"></mat-icon></td> <td>
+      <mat-form-field>
+        <textarea
+          matInput
+          cdkTextareaAutosize
+          placeholder="Comment..."
+          [(ngModel)]="rawData.comments"></textarea>
+      </mat-form-field>
+    </td></tr>
   </table>
   <mat-divider></mat-divider>
+  <div style="margin-top: 10px;">
+    <button mat-button (click)="deleteSolve(rawData)"><mat-icon svgIcon="delete"></mat-icon> Delete </button>
+    <button mat-button (click)="close()"><mat-icon svgIcon="close"></mat-icon> Cancel</button>
+    <button mat-button (click)="close(rawData)"><mat-icon svgIcon="send"></mat-icon> Save</button>
+    <button mat-button (click)="setPenalty(1)" [class.red]="rawData.penalty == 1">+2</button>
+    <button mat-button (click)="setPenalty(2)" [class.red]="rawData.penalty == 2">DNF</button>
+    <button mat-button (click)="setPenalty(0)" [class.green]="rawData.penalty == 0">No Penalty</button>
+  </div>
 </div>
 <div *ngIf="type == 'old-scrambles'">
   <table mat-table [dataSource]="rawData" multiTemplateDataRows class="mat-elevation-z8 algorithm-container light">
@@ -37,4 +57,42 @@
     <tr mat-header-row *matHeaderRowDef="columns"></tr>
     <tr mat-row *matRowDef="let element; columns: columns;" class="element-row" (click)="select(element)"></tr>
   </table>
+</div>
+<div *ngIf="type == 'edit-sessions'">
+  <div>
+    <button (click)="openAddSession()" mat-button>
+      <mat-icon svgIcon="plus"></mat-icon> Add new Session </button>
+  </div>
+  <div>
+    <table class="sessions">
+      <tr *ngIf="creatingSession">
+        <td>
+          <mat-form-field>
+            <input [(ngModel)]="newSessionName" (keyup.enter)="newSession()" matInput type="text">
+          </mat-form-field>
+        </td>
+        <td>
+          <mat-icon (click)="newSession()" svgIcon="check"></mat-icon>
+          <mat-icon (click)="closeAddSession()" svgIcon="close"></mat-icon>
+        </td>
+      </tr>
+      <tr *ngFor="let s of rawData">
+        <td>
+          <mat-form-field>
+            <input
+              #newName
+              (keyup.enter)="updateSession(s, newName.value)"
+              [value]="s.name"
+              [disabled]="!s.editing" matInput type="text">
+          </mat-form-field>
+        </td>
+        <td>
+          <mat-icon *ngIf="s.editing && !creatingSession" (click)="updateSession(s, newName.value)" svgIcon="check"></mat-icon>
+          <mat-icon *ngIf="s.editing && !creatingSession" (click)="s.editing = false" svgIcon="close"></mat-icon>
+          <mat-icon *ngIf="!s.editing && !creatingSession" (click)="s.editing = true" svgIcon="pencil"></mat-icon>
+          <mat-icon *ngIf="!s.editing && !creatingSession && rawData.length > 1" (click)="deleteSession(s)" svgIcon="delete"></mat-icon>
+        </td>
+      </tr>
+    </table>
+  </div>
 </div>

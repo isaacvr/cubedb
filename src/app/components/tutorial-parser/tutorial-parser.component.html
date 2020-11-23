@@ -1,9 +1,15 @@
 <div class="container-mini"><h1>{{title}}</h1></div>
 <div class="container-mini" *ngFor="let block of blocks">
   <ng-container *ngIf="block.type === 'text'">
-    {{block.content}}
+    <div [innerHTML]="block.content"></div>
+  </ng-container>
+  <ng-container *ngIf="block.type === 'subtitle'">
+    <h2>{{block.content}}</h2>
   </ng-container>
   <ng-container *ngIf="block.type === 'cubes'">
-    <img class="puzzle-img-mini" *ngFor="let img of block.imgs" [src]="img">
+    <ng-container *ngFor="let cb of block.cubes">
+      <img *ngIf="cb.type != 'arrow'" class="puzzle-img-mini" [src]="cb.img || ''">
+      <mat-icon [matTooltip]="cb.text" matTooltipHideDelay="100" *ngIf="cb.type == 'arrow'" svgIcon="arrow-right-thick"></mat-icon>
+    </ng-container>
   </ng-container>
 </div>

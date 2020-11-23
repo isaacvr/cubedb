@@ -1,3 +1,23 @@
+::ng-deep {
+  .mat-tooltip {
+    font-size: 0.9em;
+  }
+}
+
 h1 {
   margin: 0px;
+}
+
+.container-mini:last-child {
+  margin-bottom: 50px;
+}
+
+.puzzle-img-mini, mat-icon {
+  vertical-align: middle;
+}
+
+mat-icon {
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
 }

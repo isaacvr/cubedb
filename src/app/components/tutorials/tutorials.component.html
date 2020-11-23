@@ -3,11 +3,7 @@
   <mat-card-content>
     <a class="card-mini" mat-flat-button
       *ngFor="let t of tutorials[k]"
-      [routerLink]="t.puzzle + '/' + t.titleLower"
+      [routerLink]="t.puzzle + '/' + t.titleLower + '?id=' + t._id"
       >{{t.title}}</a>
   </mat-card-content>
 </mat-card>
-<!-- <h2>2x2x2</h2>
-<h2>3x3x3</h2>
-<h2>4x4x4</h2>
-<h2>Square One</h2> -->

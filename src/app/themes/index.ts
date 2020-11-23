@@ -10,7 +10,7 @@ export function regTheme(code: string, name: string, rules: string[][]) {
 regTheme('default', 'Mixed (default)', [
   [ "rgb(236,64,122)" ],
   [ "rgb(100,181,246)" ],
-  ['--primary', 'rgba(255, 255, 255, 0.4)' ],
+  ['--primary', 'rgb(91, 116, 226)' ],
   ['--accent', 'rgba(255, 255, 255, 0.3)' ],
   ['--light', 'rgba(255, 255, 255, 0.6)' ],
   ['--bgcard', 'rgba(255, 255, 255, 0.93)' ],
@@ -34,7 +34,7 @@ regTheme('dark', 'Dark', [
 regTheme('green', 'Green', [
   [ "#00dde0" ],
   [ "#01ad07" ],
-  ['--primary', 'rgba(255, 255, 255, 0.4)' ],
+  ['--primary', 'rgb(0, 170, 84)' ],
   ['--accent', 'rgba(255, 255, 255, 0.3)' ],
   ['--light', 'rgba(255, 255, 255, 0.6)' ],
   ['--bgcard', 'rgba(255, 255, 255, 0.93)' ],

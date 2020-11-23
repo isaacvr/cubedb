@@ -1,6 +1,8 @@
+import { generateCubeBundle } from 'app/cube-drawer';
+import { Puzzle } from './../../classes/puzzle/puzzle';
 import { ThemeService } from './../../services/theme.service';
-import { Penalty, Solve } from './../../interfaces/interfaces';
-import { Component, HostListener, OnInit, OnDestroy, ViewChild, ElementRef, ChangeDetectorRef, OnChanges } from '@angular/core';
+import { Penalty, Solve, Session } from './../../interfaces/interfaces';
+import { Component, HostListener, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Label, Color } from 'ng2-charts';
 import { ChartDataSets, ChartOptions } from 'chart.js';
 import { transform } from 'app/pipes/timer.pipe';
@@ -64,6 +66,8 @@ export class TimerComponent implements OnInit, OnDestroy {
   stateMessage: string;
   stats: Statistics;
   AoX: number;
+  preview: string;
+  Ao5: number[];
 
   group: number;
   groups: string[];
@@ -75,23 +79,25 @@ export class TimerComponent implements OnInit, OnDestroy {
 
   prob: number;
 
+  allSolves: Solve[];
   solves: Solve[];
   lastSolve: Solve;
+  session: Session;
+  sessions: Session[];
+  tab: number;
+  hint: boolean;
+  hintDialog: boolean;
+  selected: number;
+  ready: boolean;
 
   private ref: number;
   private refPrevention: number;
-  private ready: boolean;
   private itv: any;
   private isValid: boolean;
-  private tab: number;
-  private hint: boolean;
-  private hintDialog: boolean;
-  private selected: number;
   private enableKeyboard: boolean;
 
   /// Subscription
-  private recSub: Subscription;
-  private themeSub: Subscription;
+  private subs: Subscription[];
 
   /// Test
   lineChartData: ChartDataSets[] = [];
@@ -165,11 +171,14 @@ export class TimerComponent implements OnInit, OnDestroy {
     this.ref = 0;
     this.refPrevention = 0;
     this.state = TimerState.CLEAN;
-    this.tab = 1;
+    this.tab = 0;
     this.hint = false;
     this.selected = 0;
     this.AoX = 100;
     this.enableKeyboard = true;
+    this.preview = '';
+
+    this.Ao5 = null;
 
     this.ready = false;
     this.decimals = true;
@@ -183,6 +192,8 @@ export class TimerComponent implements OnInit, OnDestroy {
     this.modes = [];
     this.filters = [];
     this.cross = [];
+    this.solves = [];
+    this.allSolves = [];
 
     this.lastSolve = null;
 
@@ -202,41 +213,102 @@ export class TimerComponent implements OnInit, OnDestroy {
       __counter: 0,
     };
 
-    this.recSub = this.dataService.recSub.subscribe({
-      next: (solves: Solve[]) => {
-        this.solves = solves;
-        this.setSolves();
-      }
-    });
+    this.subs = [
+      this.dataService.solveSub.subscribe((data) => {
 
-    this.themeSub = themeService.subscr.subscribe((name) => {
-      if ( name === 'dark' ) {
-        this.lineChartOptions.legend.labels.fontColor = '#bbbbbb';
-        this.lineChartOptions.scales.yAxes[0].ticks.fontColor = '#bbbbbb';
-        this.lineChartColors = [
-          { borderColor: "#e23c7e", pointBackgroundColor: "#e23c7e", pointRadius: 2, borderWidth: 1 },
-          { borderColor: "#b651e1", pointBackgroundColor: "#b651e1", pointRadius: 2, borderWidth: 1 },
-          { borderColor: "#3166c9", pointBackgroundColor: "#3166c9", pointRadius: 2, borderWidth: 1 },
-          { borderColor: "#63ab75", pointBackgroundColor: "#63ab75", pointRadius: 2, borderWidth: 1 },
-          { borderColor: "#ab8254", pointBackgroundColor: "#ab8254", pointRadius: 2, borderWidth: 1 },
-          { borderColor: "#ffffff", pointBackgroundColor: "#ffffff", pointRadius: 2, borderWidth: 2 },
-        ];
-      } else {
-        this.lineChartColors = [
-          { borderColor: "#cc0063", pointBackgroundColor: "#cc0063", pointRadius: 2, borderWidth: 1 },
-          { borderColor: "#8d28b8", pointBackgroundColor: "#8d28b8", pointRadius: 2, borderWidth: 1 },
-          { borderColor: "#0359b5", pointBackgroundColor: "#0359b5", pointRadius: 2, borderWidth: 1 },
-          { borderColor: "#0b982f", pointBackgroundColor: "#0b982f", pointRadius: 2, borderWidth: 1 },
-          { borderColor: "#ad5f05", pointBackgroundColor: "#ad5f05", pointRadius: 2, borderWidth: 1 },
-          { borderColor: "#555555", pointBackgroundColor: "#555555", pointRadius: 2, borderWidth: 2 },
-        ];
-        this.lineChartOptions.legend.labels.fontColor = 'black';
-        this.lineChartOptions.scales.yAxes[0].ticks.fontColor = 'black';
-      }
-    });
+        if ( !data.data ) {
+          return;
+        }
+
+        switch(data.type) {
+          case 'get-solves': {
+            this.allSolves = data.data;
+            this.setSolves();
+            break;
+          }
+          case 'add-solve': {
+            let s = this.allSolves.find(s => s.date === data.data[0].date);
+            s._id = data.data[0]._id;
+            this.updateSolves();
+            break;
+          }
+          case 'remove-solves': {
+            let ids = data.data;
+            for (let i = this.allSolves.length - 1; i >= 0; i -= 1) {
+              if ( ids.indexOf(this.allSolves[i]._id) > -1 ) {
+                this.allSolves.splice(i, 1);
+              }
+            }
+            this.setSolves();
+            break;
+          }
+        }
+      }),
+      this.themeService.subscr.subscribe((name) => {
+        if ( name === 'dark' ) {
+          this.lineChartOptions.legend.labels.fontColor = '#bbbbbb';
+          this.lineChartOptions.scales.yAxes[0].ticks.fontColor = '#bbbbbb';
+          this.lineChartColors = [
+            { borderColor: "#e23c7e", pointBackgroundColor: "#e23c7e", pointRadius: 2, borderWidth: 1 },
+            { borderColor: "#b651e1", pointBackgroundColor: "#b651e1", pointRadius: 2, borderWidth: 1 },
+            { borderColor: "#3166c9", pointBackgroundColor: "#3166c9", pointRadius: 2, borderWidth: 1 },
+            { borderColor: "#63ab75", pointBackgroundColor: "#63ab75", pointRadius: 2, borderWidth: 1 },
+            { borderColor: "#ab8254", pointBackgroundColor: "#ab8254", pointRadius: 2, borderWidth: 1 },
+            { borderColor: "#ffffff", pointBackgroundColor: "#ffffff", pointRadius: 2, borderWidth: 2 },
+          ];
+        } else {
+          this.lineChartColors = [
+            { borderColor: "#cc0063", pointBackgroundColor: "#cc0063", pointRadius: 2, borderWidth: 1 },
+            { borderColor: "#8d28b8", pointBackgroundColor: "#8d28b8", pointRadius: 2, borderWidth: 1 },
+            { borderColor: "#0359b5", pointBackgroundColor: "#0359b5", pointRadius: 2, borderWidth: 1 },
+            { borderColor: "#0b982f", pointBackgroundColor: "#0b982f", pointRadius: 2, borderWidth: 1 },
+            { borderColor: "#ad5f05", pointBackgroundColor: "#ad5f05", pointRadius: 2, borderWidth: 1 },
+            { borderColor: "#555555", pointBackgroundColor: "#555555", pointRadius: 2, borderWidth: 2 },
+          ];
+          this.lineChartOptions.legend.labels.fontColor = 'black';
+          this.lineChartOptions.scales.yAxes[0].ticks.fontColor = 'black';
+        }
+      }),
+      this.dataService.sessSub.subscribe((data) => {
+        
+        if ( !data.data ) {
+          return;
+        }
+
+        switch ( data.type ) {
+          case 'get-sessions': {
+            this.sessions = <Session[]> data.data;
+            let ss = localStorage.getItem('session');
+            let currentSession = this.sessions.find(s => s._id === ss);
+
+            if ( currentSession ) {
+              this.session = currentSession;
+            } else {
+              this.session = this.sessions[0];
+            }
+            localStorage.setItem('session', this.session._id);
+            break;
+          }
+          case 'rename-session': {
+            let session = <Session> data.data;
+            let renamedSession = this.sessions.find(s => s._id === session._id);
+            renamedSession.name = session.name;
+            break;
+          }
+          case 'add-session': {
+            this.sessions.push(<Session> data.data);
+            if ( this.sessions.length === 1 ) {
+              this.session = <Session> data.data;
+            }
+            break;
+          }
+        }
+      }),
+    ];
 
     this.themeService.getTheme();
-    this.dataService.getRecords();
+    this.dataService.getSessions();
+    this.dataService.getSolves();
 
   }
 
@@ -252,8 +324,9 @@ export class TimerComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this.recSub.unsubscribe();
-    this.themeSub.unsubscribe();
+    for (let i = 0, maxi = this.subs.length; i < maxi; i += 1) {
+      this.subs[i].unsubscribe();
+    }
   }
 
   changeAoX(event: { target: HTMLInputElement }) {
@@ -269,17 +342,26 @@ export class TimerComponent implements OnInit, OnDestroy {
     let disc = Math.ceil(n * 0.05);
 
     for (let i = 0, maxi = len; i <= maxi; i += 1) {
+      if ( arr[len - i].penalty === Penalty.DNF ) {
+        res.push(null);
+        continue;
+      }
+
       elems.push( arr[len - i].time );
-      if ( i < n - 1 ) {
+      if ( elems.length < n ) {
         res.push(null);
       } else {
-        elems.sort();
-        let sumd = elems.reduce((s, e, p) => {
+        let e1 = elems.map(e => e).sort((a, b) => a - b);
+        let sumd = e1.reduce((s, e, p) => {
           return (p >= disc && p < n - disc) ? s + e : s;
         }, 0);
+       
+        if ( n == 5 ) {
+          console.log("ELEMS_SUMD_CANT", e1, sumd, n - disc * 2);
+        }
+
         res.push( sumd / (n - disc * 2) );
-        let pos = elems.indexOf(arr[len - i + n - 1].time);
-        elems.splice(pos, 1);
+        elems.shift();
       }
     }
 
@@ -294,6 +376,9 @@ export class TimerComponent implements OnInit, OnDestroy {
     let idx = (i: number) => rev ? len - i : i;
 
     for (let i = 0, maxi = len + 1; i < maxi; i += 1) {
+      if ( arr[ idx(i) ].penalty === Penalty.DNF ) {
+        continue;
+      }
       if ( arr[ idx(i) ].time < best ) {
         best = arr[ idx(i) ].time;
         bests.push({ x: i.toString(), y: best });
@@ -309,9 +394,9 @@ export class TimerComponent implements OnInit, OnDestroy {
     let BEST = [ Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity ];
     let len = this.solves.length;
     let sum = 0;
-    let bw = this.solves.reduce((ac: number[], e, p) => {
+    let bw = this.solves.reduce((ac: number[], e) => {
       sum += e.time;
-      return [ Math.min(ac[0], e.time), Math.max(ac[1], e.time) ];
+      return ( e.penalty === Penalty.DNF ) ? ac : [ Math.min(ac[0], e.time), Math.max(ac[1], e.time) ];
     }, [Infinity, 0]);
 
     for (let i = 0, maxi = AON.length; i < maxi; i += 1) {
@@ -384,6 +469,7 @@ export class TimerComponent implements OnInit, OnDestroy {
       time: this.time,
       comments: '',
       selected: false,
+      session: ""
     };
   }
 
@@ -405,19 +491,34 @@ export class TimerComponent implements OnInit, OnDestroy {
 
       this.scramble = (scr) ? scr : all.pScramble.scramblers.get(md).apply(null, [
         md, Math.abs(this.mode[2]), this.prob < 0 ? undefined : this.prob
-      ]);
+      ]).replace(/\\n/g, '<br>').trim(); 
 
       let modes = ["333", "333fm" ,"333oh" ,"333o" ,"easyc" ,"333ft"];
 
       if ( modes.indexOf(md) > -1 ) {
         this.cross = solve_cross(this.scramble).map(e => e.map(e1 => e1.trim()).join(' '))[0];
         this.xcross = solve_xcross(this.scramble, 0).map(e => e.trim()).join(' ');
+        
         debug("CROSS", this.cross);
         debug("XCROSS", this.xcross);
         this.hintDialog = true;
       } else {
         this.hint = false;
         this.hintDialog = false;
+      }
+
+      if ( all.pScramble.options.has(md) ) {        
+        let cb = Puzzle.fromSequence(
+          this.scramble, all.pScramble.options.get(md)
+        );
+        let subscr = generateCubeBundle([cb], 500).subscribe({
+            next: (img: string) => {
+              this.preview = img;
+            },
+            complete: () => {
+              subscr.unsubscribe();
+            }
+        });
       }
 
       debug(this.scramble);
@@ -451,10 +552,6 @@ export class TimerComponent implements OnInit, OnDestroy {
     clearInterval(this.itv);
   }
 
-  deleteLastSolve() {
-    this.lastSolve = null;
-  }
-
   dnf() {
     if ( this.lastSolve.penalty === Penalty.P2 ) {
       this.lastSolve.time -= 2000;
@@ -474,24 +571,45 @@ export class TimerComponent implements OnInit, OnDestroy {
     }
   }
 
-  addComment() {
-
-  }
-
   addSolve() {
     this.lastSolve.date = Date.now();
     this.lastSolve.time = this.time;
+    this.lastSolve.group = this.group;
     this.lastSolve.mode = this.mode[1];
     this.lastSolve.len = this.mode[2];
     this.lastSolve.prob = this.prob;
+    this.lastSolve.session = this.session._id;
+    this.allSolves.push( this.lastSolve );
     this.solves.push( this.lastSolve );
+    this.dataService.addSolve(this.lastSolve);
     this.sortSolves();
     this.updateChart();
     this.updateStatistics(true);
   }
 
   sortSolves() {
-    this.solves.sort((a, b) => b.date - a.date);
+    this.allSolves.sort((a, b) => b.date - a.date);
+    this.updateSolves();
+  }
+
+  updateSolves() {
+    this.solves = this.allSolves.filter(s => s.session === this.session._id);
+    let arr = [];
+
+    for (let i = 0, j = 0, maxi = this.solves.length; i < maxi && j < 4; i += 1) {
+      if ( this.solves[i].penalty != Penalty.DNF ) {
+        arr.push( this.solves[i].time );
+        j += 1;
+      }
+    }
+
+    if ( arr.length === 4 ) {
+      arr.sort();
+      let sum = arr.reduce((ac, e) => ac + e, 0);
+      this.Ao5 = [ ( sum - arr[3] ) / 3, ( sum - arr[0] ) / 3 ];
+    } else {
+      this.Ao5 = null;
+    }
   }
 
   selectedGroup() {
@@ -512,7 +630,16 @@ export class TimerComponent implements OnInit, OnDestroy {
     this.initScrambler();
   }
 
+  handleTab(idx) {
+    if ( idx != 1 ) {
+      this.selectNone();
+    }
+  }
+
   solveClick(solve: Solve, force?: boolean) {
+    if ( this.tab != 1 ) {
+      return;
+    }
     if ( this.selected || force ) {
       this.pillMenu.closeMenu();
       solve.selected = !solve.selected;
@@ -560,8 +687,25 @@ export class TimerComponent implements OnInit, OnDestroy {
     }
   }
 
-  delete() {
+  reset() {
+    debug("RESET");
+    this.stopTimer();
+    this.time = 0;
+    this.state = TimerState.CLEAN;
+    this.ready = false;
+    this.decimals = true;
+    this.lastSolve = null;
+  }
 
+  deleteSelected() {
+    this.delete( this.solves.filter(s => s.selected) );
+    this.selected = 0;
+  }
+
+  delete(s: Solve[]) {
+    this.dataService.removeSolves(s);
+    this.initScrambler();
+    this.reset();
   }
 
   private openDialog(type: string, data: any, handler) {
@@ -586,14 +730,16 @@ export class TimerComponent implements OnInit, OnDestroy {
   editSolve(solve: Solve) {
     this.openDialog('edit-solve', solve, (s: Solve) => {
       if ( s ) {
+        solve.comments = (s.comments || '').trim();
+        solve.penalty = s.penalty;
         this.dataService.updateSolve(s);
       }
     });
   }
 
   editScramble() {
-    this.openDialog('edit-scramble', undefined, (s: string) => {
-      if ( s.trim() != '' ) {
+    this.openDialog('edit-scramble', this.scramble, (s: string) => {
+      if ( s && s.trim() != '' ) {
         this.initScrambler(s.trim());
       }
     });
@@ -602,9 +748,26 @@ export class TimerComponent implements OnInit, OnDestroy {
   oldScrambles() {
     this.openDialog('old-scrambles', this.solves, (s: Solve) => {
       if ( s ) {
-        this.initScrambler(s.scramble, s.mode);
+        this.group = s.group || 0;
+        let menu = MENU[ this.group ];
+        this.mode = ( typeof s.group != 'undefined' ) ? menu[1].filter(m => m[1] === s.mode)[0] : menu[1][0];
+        this.prob = s.prob;
+        this.initScrambler(s.scramble);
       }
     });
+  }
+
+  editSessions() {
+    this.openDialog('edit-sessions', this.sessions, () => {
+      if ( this.sessions.indexOf( this.session ) < 0 ) {
+        this.session = this.sessions[0];
+      }
+    });
+  }
+
+  selectedSession() {
+    localStorage.setItem('session', this.session._id);
+    this.setSolves();
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -643,17 +806,19 @@ export class TimerComponent implements OnInit, OnDestroy {
             this.initScrambler();
           }
         } else if ( ['KeyR', 'Escape', 'KeyS'].indexOf(event.code) > -1 ) {
-          debug("RESET");
-          this.stopTimer();
-          this.time = 0;
-          this.state = TimerState.CLEAN;
-          this.ready = false;
-          this.decimals = true;
-          this.lastSolve = null;
-
+          this.reset();
           if ( event.code === 'KeyS' ) {
             this.initScrambler();
           }
+        } else if ( this.state === TimerState.RUNNING ) {
+          debug('STOP');
+          this.stopTimer();
+          this.time = ~~(performance.now() - this.ref);
+          this.addSolve();
+          this.state = TimerState.STOPPED;
+          this.ready = false;
+          this.lastSolve.time = this.time;
+          this.initScrambler();
         }
         break;
       }

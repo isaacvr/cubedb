@@ -1,3 +1,4 @@
+import { PuzzleOptions } from './../../interfaces/interfaces';
 import { rn, rndEl, rndProb } from '../lib/mathlib';
 
 const DEBUG = false;
@@ -29,25 +30,14 @@ export function mega(turns, suffixes, length) {
   return s.join(' ');
 }
 
-/**
- *	{type: callback(type, length, state)}
-  *	callback return: scramble string or undefined means delay
-  */
 export let scramblers: Map<string, Function> = new Map<string, Function> ();
 
-/**
- *	{type: [str1, str2, ..., strN]}
-  */
 export let filters: Map<string, string[]> = new Map<string, string[]>();
 
-/**
- *	{type: [prob1, prob2, ..., probN]}
-  */
 export let probs: Map<string, number[]> = new Map<string, number[]>();
 
-/**
- *	filter_and_probs: [[str1, ..., strN], [prob1, ..., probN]]
-  */
+export let options: Map<string, PuzzleOptions> = new Map<string, PuzzleOptions> ();
+
 export function regScrambler(mode: string | string[], callback: Function, filter_and_probs?) {
   DEBUG && console.log('[regscr]', mode);
 
@@ -58,7 +48,7 @@ export function regScrambler(mode: string | string[], callback: Function, filter
       probs.set(mode[i], []);
     }
   } else {
-    scramblers.set(mode, callback);
+    scramblers.set(mode, callback);    
     if (filter_and_probs != undefined) {
       filters.set(mode, filter_and_probs[0]);
       probs.set(mode, filter_and_probs[1]);

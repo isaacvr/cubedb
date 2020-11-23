@@ -13,13 +13,17 @@
   }
 }
 
+* {
+  font-family: #{$regular-font};
+}
+
 body {
   position: absolute;
   margin: 0;
   padding: 0;
   height: 100%;
   width: 100%;
-  font-family: #{$regular-font};
+  // font-family: #{$regular-font};
   // background-color: rgba(255, 255, 255, 0.8);
   // background-color: rgba(33, 33, 33, 0.2);
   background-attachment: fixed;

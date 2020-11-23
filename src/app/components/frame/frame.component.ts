@@ -7,8 +7,14 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./frame.component.scss']
 })
 export class FrameComponent {
+  date;
+  constructor(private dataService: DataService) {
+    this.date = Date.now();
 
-  constructor(private dataService: DataService) { }
+    setInterval(() => {
+      this.date = Date.now();
+    }, 1000);
+  }
 
   minimize() {
     this.dataService.window.minimize();

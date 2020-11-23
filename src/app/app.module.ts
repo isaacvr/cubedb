@@ -8,6 +8,7 @@ import { HttpClientModule } from '@angular/common/http';
 
 /// Vendor modules
 import { ChartsModule } from 'ng2-charts';
+import { NgxCsvParserModule } from 'ngx-csv-parser';
 
 /// My modules & components
 import { AppRoutingModule } from './app-routing.module';
@@ -27,6 +28,8 @@ import { MatComponentsModule } from './modules/mat-components/mat-components.mod
 import { PllTrainerComponent } from './components/pll-trainer/pll-trainer.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { DialogComponent } from './components/dialog/dialog.component';
+import { ImportExportComponent } from './components/import-export/import-export.component';
+import { IterativePuzzleComponent } from './components/iterative-puzzle/iterative-puzzle.component';
 
 @NgModule({
   declarations: [
@@ -44,6 +47,8 @@ import { DialogComponent } from './components/dialog/dialog.component';
     PllTrainerComponent,
     SettingsComponent,
     DialogComponent,
+    ImportExportComponent,
+    IterativePuzzleComponent,
   ],
   imports: [
     BrowserModule,
@@ -54,6 +59,7 @@ import { DialogComponent } from './components/dialog/dialog.component';
     HttpClientModule,
     MatComponentsModule,
     ChartsModule,
+    NgxCsvParserModule,
   ],
   bootstrap: [AppComponent],
   providers: [
@@ -65,6 +71,6 @@ import { DialogComponent } from './components/dialog/dialog.component';
 })
 export class AppModule {
   constructor(private matIconRegistry: MatIconRegistry, domSanitizer: DomSanitizer) {
-    this.matIconRegistry.addSvgIconSet(domSanitizer.bypassSecurityTrustResourceUrl('../assets/mdi.svg'));
+    this.matIconRegistry.addSvgIconSet(domSanitizer.bypassSecurityTrustResourceUrl('./assets/mdi.svg'));
   }
 }

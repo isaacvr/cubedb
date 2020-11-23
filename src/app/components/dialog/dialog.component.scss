@@ -1,8 +1,16 @@
 @import "../../../styleVariables.scss";
 
+:host {
+  color: #{$text-dark};
+}
+
 :host ::ng-deep {
   .mat-form-field-infix {
     width: max-content;
+  }
+
+  .mat-form-field-label {
+    color: #{$text-dark};
   }
 
   .mat-cell {
@@ -63,9 +71,48 @@ mat-divider {
 
   .solve-date {
     float: right;
+    margin-top: 10px;
 
     mat-icon {
       vertical-align: bottom;
     }
   }
+}
+
+mat-expansion-panel {
+  box-shadow: none;
+  border: solid 1px lightgray;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.penalty {
+  font-size: 0.7em;
+  color: red;
+}
+
+table {
+  width: 100%;
+}
+
+.green {
+  color: #2dd02d;
+}
+
+.red {
+  color: red;
+}
+
+td:first-child {
+  padding: 0px 20px;
+}
+
+.sessions mat-icon {
+  cursor: pointer;
+}
+
+img {
+  user-select: none;
 }

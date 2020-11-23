@@ -1,6 +1,37 @@
+import { PuzzleOptions } from './../../interfaces/interfaces';
+import { options } from '../../cstimer/scramble/scramble';
+
 interface Menu {
   0: string,
   1: { 0: string, 1: string, 2: number }[]
+}
+
+const R222 = [ "222so", "222o", "2223", "222eg", "222eg0", "222eg1", "222eg2", "222nb" ];
+const R333 = [ "333", "333ni", "333fm", "333oh", "333o", "edges", "corners", "ll", "zbll", "cll", "ell", "lse", "lsemu", "cmll", "f2l", "lsll2", "2gll", "zbls", "zzll", "oll", "pll", "eoline", "easyc", "333ft", "2gen", "2genl", "roux", "3gen_F", "3gen_L", "RrU", "half", "lsll" ];
+const R444 = [ "444wca", "444bld", "444m", "444", "444yj", "4edge", "RrUu" ];
+const R555 = [ "555wca", "555bld", "555", "5edge" ];
+const R666 = [ "666wca", "666si", "666p", "666s", "6edge" ];
+const R777 = [ "777wca", "777si", "777p", "777s", "7edge" ];
+const PYRA = [ "pyrso", "pyro", "pyrm", "pyrl4e", "pyr4c", "pyrnb" ];
+const SKWB = [ "skbso", "skbo", "skb", "skbnb" ];
+const SQR1 = [ "sqrs", "sqrcsp", "sq1h", "sq1t" ];
+const CLCK = [ "clkwca", "clk", "clkwca", "clko", "clkc", "clke" ];
+const MEGA = [ "mgmp", "mgmc", "mgmo" ];
+
+const OPTS: PuzzleOptions[] = [
+  { type: 'rubik', order: [2] }, { type: 'rubik', order: [3] }, { type: 'rubik', order: [4] },
+  { type: 'rubik', order: [5] }, { type: 'rubik', order: [6] }, { type: 'rubik', order: [7] },
+  { type: 'pyraminx', order: [3] }, { type: 'skewb' }, { type: 'square1' }, { type: 'clock' },
+  { type: 'megaminx' }
+];
+
+const MODES = [ R222, R333, R444, R555, R666, R777, PYRA, SKWB, SQR1, CLCK, MEGA ];
+
+for (let i = 0, maxi = MODES.length; i < maxi; i += 1) {
+  OPTS[i].view = '2d';
+  for (let j = 0, maxj = MODES[i].length; j < maxj; j += 1) {
+    options.set(MODES[i][j], OPTS[i]);
+  }
 }
 
 export const MENU: Menu[] = [
@@ -23,7 +54,7 @@ export const MENU: Menu[] = [
       ['Sq-1', "sqrs", 0],
       ['4x4 BLD', "444bld", -40],
       ['5x5 BLD', "555bld", -60],
-      ['MBLD', "r3ni", 5],
+      // ['MBLD', "r3ni", 5],
     ]
   ],
   [

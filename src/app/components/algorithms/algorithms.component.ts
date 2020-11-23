@@ -148,14 +148,7 @@ export class AlgorithmsComponent implements OnDestroy {
     this.cases.length = 0;
 
     if ( list.length > 0 ) {
-      let hasSolutions = false;
-
-      for (let i = 0, maxi = list.length; i < maxi; i += 1) {
-        if ( list[i].hasOwnProperty('solutions') ) {
-          hasSolutions = true;
-          break;
-        }
-      }
+      let hasSolutions = list.find(l => l.hasOwnProperty('solutions'));
       if ( hasSolutions ) {
         for (let i = 0, maxi = list.length; i < maxi; i += 1) {
           if ( !list[i].hasOwnProperty('solutions') ) {
@@ -166,7 +159,6 @@ export class AlgorithmsComponent implements OnDestroy {
           }
         }
         this.type = 2;
-      } else {
       }
     }
 
@@ -187,11 +179,9 @@ export class AlgorithmsComponent implements OnDestroy {
       return a < b ? -1 : 1;
     });
 
-    console.log('SORTED LIST', list);
-
     let cubes = list.map(e => {
       let args = nameToPuzzle(e.puzzle);
-      let seq = e.hasOwnProperty('solutions') ? e.solutions[0].moves : e.scramble;
+      let seq = e.scramble + " z2";
       return Puzzle.fromSequence(seq, {
         type: args[0],
         order: args.slice(1, args.length),
@@ -222,19 +212,18 @@ export class AlgorithmsComponent implements OnDestroy {
     
     let subs = generateCubeBundle(cubes).subscribe({
       next: (img) => {
-        if ( this.type < 2 ) {
-          // console.log(idx, 'of', this.cards.length);
+        if ( this.type < 2 ) {          
           this.cards[idx].cube = <string>img;
           this.cards[idx].ready = true;
         } else {
-          // console.log(idx, 'of', this.cases.length);
           this.cases[idx].cube = <string>img;
           this.cases[idx].ready = true;
         }
 
         idx += 1;
       },
-      complete: () => { subs.unsubscribe(); }
+      complete: () => { subs.unsubscribe(); },
+      error: () => { subs.unsubscribe(); },
     });//*/
 
   }
