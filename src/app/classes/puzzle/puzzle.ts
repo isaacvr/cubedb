@@ -18,6 +18,7 @@ import { MIRROR } from './mirror';
 import { DINO } from './dino';
 import { REX } from './rex';
 import { REDI } from './redi';
+import { MIXUP } from './mixup';
 import { PuzzleType, CubeView } from '../../types';
 
 const protos = {
@@ -34,6 +35,7 @@ const protos = {
   dino: DINO,
   rex: REX,
   redi: REDI,
+  mixup: MIXUP,
 };
 
 export class Puzzle {

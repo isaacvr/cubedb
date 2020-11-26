@@ -26,11 +26,12 @@ function drag(piece: THREE.Intersection, ini: THREE.Vector2, fin: THREE.Vector2,
   camera.updateProjectionMatrix();
 
   let pc = [ piece.object.parent.userData, piece.object.userData ];
-  let vecs = pc[1].vecs.filter(v => v.cross( pc[1].getOrientation() ).abs() > 1e-6 );
+  let u = pc[1].getOrientation();
+  let vecs = pc[1].vecs.filter(v => v.cross(u).abs() > 1e-6 );
   let v = fin.clone().sub(ini);
   let vv = new Vector3D(v.x, v.y, 0);
  
-  let faceVectors = cube.p.vectorsFromCamera(vecs, camera);
+  let faceVectors = cube.p.vectorsFromCamera(vecs, camera, u);
 
   let dir;
   let best;
@@ -47,11 +48,11 @@ function drag(piece: THREE.Intersection, ini: THREE.Vector2, fin: THREE.Vector2,
     return ac;
   }, -Infinity);
 
+  // console.log("BEST_DIR: ", best, dir);
+
   if ( !best ) {
     return null;
   }
-
-  // console.log("BEST_DIR: ", best, dir);
 
   let animationBuffer: THREE.Geometry[] = [];
   let userData: any[] = [];
@@ -129,7 +130,7 @@ export class IterativePuzzleComponent implements OnDestroy {
     this.animBuffer = [];
 
     this.GUIExpanded = false;
-    this.selectedPuzzle = 'redi';
+    this.selectedPuzzle = 'mixup';
     this.order = 3;
     this.hasOrder = false;
     this.puzzles = [
@@ -145,6 +146,7 @@ export class IterativePuzzleComponent implements OnDestroy {
       { name: "Dino", value: "dino", order: false },
       { name: "Rex", value: "rex", order: false },
       { name: "Redi", value: "redi", order: false },
+      { name: "Mixup", value: "mixup", order: false },
     ];
 
     let renderer = new THREE.WebGLRenderer({

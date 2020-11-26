@@ -144,7 +144,7 @@ export class Sticker {
     return s;
   }
 
-  direction1(a: Vector3D, u: Vector3D, useMc: boolean): -1 | 0 | 1 {
+  direction1(a: Vector3D, u: Vector3D, useMc?: boolean): -1 | 0 | 1 {
     let dirs = [0, 0, 0];
     let pts = (useMc) ? [this.getMassCenter()] : this.points;
 
@@ -180,21 +180,30 @@ export class Sticker {
   }
 
   reflect(p1: Vector3D, p2: Vector3D, p3: Vector3D, preserveOrientation?: boolean): Sticker {
-    let s = this.clone(true);
-   
-    let u = Vector3D.cross(p1, p2, p3).unit();
-    let dist = (p: Vector3D) => p.sub(p1).dot(u);
+    return this.reflect1( p1, Vector3D.cross(p1, p2, p3), preserveOrientation );
+  }
+
+  reflect1(a: Vector3D, _u: Vector3D, preserveOrientation?: boolean): Sticker {
+    let u = _u.unit();
+    let s = this.clone(true);    
+    let dist = (p: Vector3D) => p.sub(a).dot(u);
 
     s.points = this.points.map(p => p.add( u.mul( -2 * dist(p) ) ));
     if ( preserveOrientation ) {
-      s.points.reverse();
+      s.reverse(true);
     }
     s._cached_mass_center = s._cached_mass_center.add( u.mul( -2 * dist(s._cached_mass_center) ) );
     s.vecs = s.vecs.map(v => v.add( u.mul( -2 * v.dot(u) ) ));
     return s;
   }
 
-  reverse(): Sticker {
+  reverse(self ?: boolean): Sticker {
+    if ( self ) {
+      this.points.reverse();
+      this.points.unshift( this.points[ this.points.length - 1 ] );
+      this.points.pop();
+      return this;
+    }
     let s = this.clone(true);
     s.points = this.points.map(p => p.clone()).reverse();
     s.points.unshift( s.points[ s.points.length - 1 ] );

@@ -140,17 +140,19 @@ export class Piece {
 
   direction1(anchor: Vector3D, u: Vector3D, useMassCenter?: boolean): -1 | 0 | 1 {
     let dirs = [0, 0, 0];
-    let pts = this.stickers;
-    let len = pts.length;
+    let st = this.stickers;
+    let len = st.length;
 
     for (let i = 0; i < len; i += 1) {
-      dirs[ pts[i].direction1(anchor, u, useMassCenter) + 1 ] += 1;
+      dirs[ st[i].direction1(anchor, u, useMassCenter) + 1 ] += 1;
+      
+      if ( dirs[1] || ( dirs[0] > 0 && dirs[2] > 0 ) ) {
+        return 0;
+      }
     }
     // console.log("DIRS1: ", dirs);
 
-    if ( dirs[1] || ( dirs[0] > 0 && dirs[2] > 0 ) ) {
-      return 0;
-    }else if ( dirs[0] ) {
+    if ( dirs[0] ) {
       return -1;
     }
 
