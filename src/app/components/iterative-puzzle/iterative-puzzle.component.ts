@@ -7,6 +7,7 @@ import { PuzzleType } from './../../types';
 import { Component, OnDestroy } from '@angular/core';
 import * as THREE from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
+import { puzzleReg } from 'app/classes/puzzle/puzzleRegister';
 
 function tToV(v1: THREE.Vector3): Vector3D {
   return new Vector3D(v1.x, v1.y, v1.z);
@@ -133,21 +134,18 @@ export class IterativePuzzleComponent implements OnDestroy {
     this.selectedPuzzle = 'mixup';
     this.order = 3;
     this.hasOrder = false;
-    this.puzzles = [
-      { name: "Rubik's Cube (NxNxN)", value: "rubik", order: true },
-      { name: "Pyraminx", value: "pyraminx", order: true },
-      { name: "Mirror", value: "mirror", order: true },
-      { name: "Megaminx", value: "megaminx", order: false },
-      { name: "Skewb", value: "skewb", order: false },
-      { name: "Square One", value: "square1", order: false },
-      { name: "Fisher", value: "fisher", order: false },
-      { name: "Axis", value: "axis", order: false },
-      { name: "Ivy", value: "ivy", order: false },
-      { name: "Dino", value: "dino", order: false },
-      { name: "Rex", value: "rex", order: false },
-      { name: "Redi", value: "redi", order: false },
-      { name: "Mixup", value: "mixup", order: false },
-    ];
+
+    this.puzzles = [];
+
+    for (let [key, value] of puzzleReg ) {
+      if ( key != 'clock' ) {
+        this.puzzles.push({
+          name: value.name,
+          value: key,
+          order: value.order
+        });
+      }
+    }
 
     let renderer = new THREE.WebGLRenderer({
       antialias: true,

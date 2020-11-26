@@ -5,38 +5,11 @@ import { ScrambleParser } from './../scramble-parser';
 import { CubeMode, strToHex } from './../../constants/constants';
 import { Piece } from './Piece';
 import { PuzzleInterface, PuzzleOptions } from '../../interfaces/interfaces';
-import { RUBIK } from './nnn';
-import { SKEWB } from './skewb';
-import { SQUARE1 } from './square1';
-import { PYRAMINX } from './pyraminx';
-import { AXIS } from './axis';
-import { FISHER } from './fisher';
-import { IVY } from './ivy';
-import { CLOCK } from './clock';
-import { MEGAMINX } from './megaminx';
-import { MIRROR } from './mirror';
-import { DINO } from './dino';
-import { REX } from './rex';
-import { REDI } from './redi';
-import { MIXUP } from './mixup';
 import { PuzzleType, CubeView } from '../../types';
+import * as puzzles from './allPuzzles';
+import { puzzleReg } from './puzzleRegister';
 
-const protos = {
-  skewb: SKEWB,
-  square1: SQUARE1,
-  pyraminx: PYRAMINX,
-  rubik: RUBIK,
-  axis: AXIS,
-  fisher: FISHER,
-  ivy: IVY,
-  clock: CLOCK,
-  megaminx: MEGAMINX,
-  mirror: MIRROR,
-  dino: DINO,
-  rex: REX,
-  redi: REDI,
-  mixup: MIXUP,
-};
+void puzzles;
 
 export class Puzzle {
   rotation: any;
@@ -90,7 +63,7 @@ export class Puzzle {
       a = [ 3, 3, 3 ];
     }
 
-    this.p = protos[ this.type ].apply(null, a);
+    this.p = puzzleReg.get(this.type).constr.apply(null, a);
 
     this.order = a;
     this.rotation = this.p.rotation;
