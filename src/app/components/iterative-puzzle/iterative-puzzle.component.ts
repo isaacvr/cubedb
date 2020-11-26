@@ -129,8 +129,8 @@ export class IterativePuzzleComponent implements OnDestroy {
     this.animBuffer = [];
 
     this.GUIExpanded = false;
-    this.selectedPuzzle = 'rex';
-    this.order = 2;
+    this.selectedPuzzle = 'redi';
+    this.order = 3;
     this.hasOrder = false;
     this.puzzles = [
       { name: "Rubik's Cube (NxNxN)", value: "rubik", order: true },
@@ -143,7 +143,8 @@ export class IterativePuzzleComponent implements OnDestroy {
       { name: "Axis", value: "axis", order: false },
       { name: "Ivy", value: "ivy", order: false },
       { name: "Dino", value: "dino", order: false },
-      // { name: "Rex", value: "rex", order: false },
+      { name: "Rex", value: "rex", order: false },
+      { name: "Redi", value: "redi", order: false },
     ];
 
     let renderer = new THREE.WebGLRenderer({

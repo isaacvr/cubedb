@@ -16,6 +16,6 @@ export class AppComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     this.theme.initialize();
-    this.theme.setTheme('default');
+    this.theme.setTheme('dark');
   }
 }
