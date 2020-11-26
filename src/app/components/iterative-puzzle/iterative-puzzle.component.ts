@@ -143,7 +143,7 @@ export class IterativePuzzleComponent implements OnDestroy {
       { name: "Axis", value: "axis", order: false },
       { name: "Ivy", value: "ivy", order: false },
       { name: "Dino", value: "dino", order: false },
-      { name: "Rex", value: "rex", order: false },
+      // { name: "Rex", value: "rex", order: false },
     ];
 
     let renderer = new THREE.WebGLRenderer({

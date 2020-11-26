@@ -16,7 +16,7 @@ import { CLOCK } from './clock';
 import { MEGAMINX } from './megaminx';
 import { MIRROR } from './mirror';
 import { DINO } from './dino';
-import { REX } from './rex';
+// import { REX } from './rex';
 import { PuzzleType, CubeView } from '../../types';
 
 const protos = {
@@ -31,7 +31,8 @@ const protos = {
   megaminx: MEGAMINX,
   mirror: MIRROR,
   dino: DINO,
-  rex: REX,
+  rex: DINO,
+  // rex: REX,
 };
 
 export class Puzzle {
