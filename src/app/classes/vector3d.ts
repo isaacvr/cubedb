@@ -4,11 +4,10 @@ export class Vector3D {
   x: number;
   y: number;
   z: number;
-
   constructor(x ?: number, y ?: number, z ?: number) {
     this.x = x || 0;
-    this.y = y || 0; 
-    this.z = z || 0; 
+    this.y = y || 0;
+    this.z = z || 0;
   }
 
   static cross(a: Vector3D, b: Vector3D, c: Vector3D): Vector3D {
@@ -18,10 +17,6 @@ export class Vector3D {
   }
 
   static crossValue(a: Vector3D, b: Vector3D, c: Vector3D): number {
-    // a.x    a.y    a.z
-    // b.x    b.y    b.z
-    // c.x    c.y    c.z
-
     return a.x * ( b.y * c.z - c.y * b.z ) - 
            a.y * ( b.x * c.z - c.x * b.z ) +
            a.x * ( b.x * c.y - c.x * b.y );
@@ -39,6 +34,24 @@ export class Vector3D {
     return <-1 | 0 | 1> Math.sign(dot);
   }
 
+  static project(pt: Vector3D, a: Vector3D, b: Vector3D, c: Vector3D): Vector3D {
+    return Vector3D.project1(pt, a, Vector3D.cross(a, b, c).unit());
+  }
+
+  static project1(pt: Vector3D, a: Vector3D, u: Vector3D): Vector3D {
+    let v = pt.sub(a);
+    let dist = u.dot(v);
+    return pt.add( u.mul(-dist) );
+  }
+
+  project(a: Vector3D, b: Vector3D, c: Vector3D): Vector3D {
+    return this.project1(a, Vector3D.cross(a, b, c).unit());
+  }
+
+  project1(a: Vector3D, u: Vector3D): Vector3D {
+    return Vector3D.project1(this, a, u);
+  }
+
   cross(v: Vector3D): Vector3D {
     return new Vector3D(
       this.y * v.z - this.z * v.y,
@@ -51,19 +64,35 @@ export class Vector3D {
     return this.x * v.x + this.y * v.y + this.z * v.z;
   }
 
-  add(v: Vector3D): Vector3D {
+  add(v: Vector3D, self ?: boolean): Vector3D {
+    if ( self ) {
+      this.x += v.x; this.y += v.y; this.z += v.z;
+      return this;
+    }
     return new Vector3D(this.x + v.x, this.y + v.y, this.z + v.z);
   }
 
-  sub(v: Vector3D): Vector3D {
+  sub(v: Vector3D, self ?: boolean): Vector3D {
+    if ( self ) {
+      this.x -= v.x; this.y -= v.y; this.z -= v.z;
+      return this;
+    }
     return new Vector3D(this.x - v.x, this.y - v.y, this.z - v.z);
   }
 
-  mul(f: number): Vector3D {
+  mul(f: number, self ?: boolean): Vector3D {
+    if ( self ) {
+      this.x *= f; this.y *= f; this.z *= f;
+      return this;
+    }
     return new Vector3D(this.x * f, this.y * f, this.z * f);
   }
 
-  div(f: number): Vector3D {
+  div(f: number, self ?: boolean): Vector3D {
+    if ( self ) {
+      this.x /= f; this.y /= f; this.z /= f;
+      return this;
+    }
     return new Vector3D(this.x / f, this.y / f, this.z / f);
   }
 

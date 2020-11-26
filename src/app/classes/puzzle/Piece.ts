@@ -4,11 +4,13 @@ import { Sticker } from './Sticker';
 
 export class Piece {
   stickers: Sticker[];
-  
+  boundingBox: Vector3D[];
+
   private _cached_mass_center: Vector3D;
   constructor(stickers?: Sticker[]) {
     this.stickers = (stickers || []).map(e => e.clone());
     this.updateMassCenter();
+    this.computeBoundingBox();
   }
 
   updateMassCenter(): Vector3D {
@@ -52,19 +54,43 @@ export class Piece {
     }
   }
 
-  add(ref: Vector3D): Piece {
+  add(ref: Vector3D, self ?: boolean): Piece {
+    if ( self ) {
+      this.stickers.forEach(s => s.add(ref, true));
+      this.boundingBox.forEach(s => s.add(ref, true));
+      this._cached_mass_center.add(ref, true);
+      return this;
+    }
     return new Piece(this.stickers.map(s => s.add(ref)));
   }
   
-  sub(ref: Vector3D): Piece {
+  sub(ref: Vector3D, self ?: boolean): Piece {
+    if ( self ) {
+      this.stickers.forEach(s => s.sub(ref, true));
+      this.boundingBox.forEach(s => s.sub(ref, true));
+      this._cached_mass_center.sub(ref, true);
+      return this;
+    }
     return new Piece(this.stickers.map(s => s.sub(ref)));
   }
 
-  mul(f: number): Piece {
+  mul(f: number, self ?: boolean): Piece {
+    if ( self ) {
+      this.stickers.forEach(s => s.mul(f, true));
+      this.boundingBox.forEach(s => s.mul(f, true));
+      this._cached_mass_center.mul(f, true);
+      return this;
+    }
     return new Piece(this.stickers.map(s => s.mul(f)));
   }
 
   div(f: number): Piece {
+    if ( self ) {
+      this.stickers.forEach(s => s.div(f, true));
+      this.boundingBox.forEach(s => s.div(f, true));
+      this._cached_mass_center.div(f, true);
+      return this;
+    }
     return new Piece( this.stickers.map(s => s.div(f)));
   }
 
@@ -72,11 +98,13 @@ export class Piece {
     if ( self ) {
       this.stickers.map(s => s.rotate(ref, dir, ang, true));
       this._cached_mass_center.rotate(ref, dir, ang, true);
+      this.computeBoundingBox();
       return this;
     }
     let p = new Piece();
     p.stickers = this.stickers.map(s => s.rotate(ref, dir, ang));
     p._cached_mass_center = this._cached_mass_center.rotate(ref, dir, ang);
+    p.computeBoundingBox();
     return p;
   }
 
@@ -177,5 +205,22 @@ export class Piece {
     }
 
     return true;
+  }
+
+  computeBoundingBox(): Vector3D[] {
+    let bbs = this.stickers.map(s => s.computeBoundingBox());
+    let box = bbs.reduce((ac, p) => {
+      return [
+        Math.min(ac[0], p[0].x), Math.min(ac[1], p[0].y), Math.min(ac[2], p[0].z),
+        Math.max(ac[3], p[1].x), Math.max(ac[4], p[1].y), Math.max(ac[5], p[1].z),
+      ]
+    }, [ Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity ]);
+
+    this.boundingBox = [
+      new Vector3D(box[0], box[1], box[2]),
+      new Vector3D(box[3], box[4], box[5])
+    ];
+
+    return this.boundingBox;
   }
 }

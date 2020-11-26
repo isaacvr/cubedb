@@ -4,20 +4,34 @@ export class Sticker {
   points: Vector3D[];
   color: string;
   oColor: string;
-  types: string[];
   _generator: Sticker;
   vecs: Vector3D[];
+  boundingBox: Vector3D[];
 
   private _cached_mass_center: Vector3D;
 
-  constructor(pts?: Vector3D[], color?: string, types ?: string[]) {
+  constructor(pts?: Vector3D[], color?: string) {
     this.points = (pts || []).map(e => e.clone());
     this.oColor = color || 'w';
     this.color = this.oColor;
-    this.types = (types || [ 'v' ]).map(e => e);
     this.updateMassCenter();
+    this.computeBoundingBox();
     this._generator = this;
     this.vecs = [];
+  }
+
+  computeBoundingBox(): Vector3D[] {
+    let box = this.points.reduce((ac, p) => {
+      return [
+        Math.min(ac[0], p.x), Math.min(ac[1], p.y), Math.min(ac[2], p.z),
+        Math.max(ac[3], p.x), Math.max(ac[4], p.y), Math.max(ac[5], p.z),
+      ]
+    }, [ Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity ]);
+
+    return this.boundingBox = [
+      new Vector3D(box[0], box[1], box[2]),
+      new Vector3D(box[3], box[4], box[5])
+    ];
   }
 
   updateMassCenter(): Vector3D {
@@ -30,29 +44,57 @@ export class Sticker {
     return this._cached_mass_center;
   }
 
-  add(ref: Vector3D): Sticker {
+  add(ref: Vector3D, self ?: boolean): Sticker {
+    if ( self ) {
+      this.points.forEach(p => p.add(ref, true));
+      this.boundingBox.forEach(p => p.add(ref, true));
+      this._cached_mass_center.add(ref, true);
+      return this;
+    }
     let cp = this.clone(true);
+    cp.boundingBox = this.boundingBox.map(e => e.add(ref));
     cp.points = this.points.map(e => e.add(ref));
     cp._cached_mass_center = cp._cached_mass_center.add(ref);
     return cp;
   }
 
-  sub(ref: Vector3D): Sticker {
+  sub(ref: Vector3D, self ?: boolean): Sticker {
+    if ( self ) {
+      this.points.forEach(p => p.sub(ref, true));
+      this.boundingBox.forEach(p => p.sub(ref, true));
+      this._cached_mass_center.sub(ref, true);
+      return this;
+    }
     let cp = this.clone(true);
+    cp.boundingBox = this.boundingBox.map(e => e.sub(ref));
     cp.points = this.points.map(e => e.sub(ref));
     cp._cached_mass_center = cp._cached_mass_center.sub(ref);
     return cp;
   }
 
-  mul(f: number): Sticker {
+  mul(f: number, self ?: boolean): Sticker {
+    if ( self ) {
+      this.points.forEach(p => p.mul(f, true));
+      this.boundingBox.forEach(p => p.mul(f, true));
+      this._cached_mass_center.mul(f, true);
+      return this;
+    }
     let cp = this.clone(true);
+    cp.boundingBox = this.boundingBox.map(e => e.mul(f));
     cp.points = this.points.map(e => e.mul(f));
     cp._cached_mass_center = cp._cached_mass_center.mul(f);
     return cp;
   }
 
-  div(f: number): Sticker {
+  div(f: number, self ?: boolean): Sticker {
+    if ( self ) {
+      this.points.forEach(p => p.div(f, true));
+      this.boundingBox.forEach(p => p.div(f, true));
+      this._cached_mass_center.div(f, true);
+      return this;
+    }
     let cp = this.clone(true);
+    cp.boundingBox = this.boundingBox.map(e => e.div(f));
     cp.points = this.points.map(e => e.div(f));
     cp._cached_mass_center = cp._cached_mass_center.div(f);
     return cp;
@@ -65,8 +107,12 @@ export class Sticker {
   getOrientation(): Vector3D {
     let n = this.points.length;
     let i = [0, 1, 2].map(e => Math.round((e / 3) * n));
-
+    // console.log("CROSS: ", this.points[ i[0] ], this.points[ i[1] ], this.points[ i[2] ]);
     return Vector3D.cross( this.points[ i[0] ], this.points[ i[1] ], this.points[ i[2] ] ).unit();
+  }
+
+  normal(): Vector3D {
+    return this.getOrientation();
   }
 
   rotate(ref: Vector3D, dir: Vector3D, ang: number, self?: boolean, col?: string): Sticker {
@@ -75,6 +121,7 @@ export class Sticker {
       this._cached_mass_center.rotate(ref, dir, ang, true);
       this.color = col || this.color;
       this.vecs.map(v => v.rotate(CENTER, dir, ang, true));
+      this.computeBoundingBox();
       return this;
     }
     
@@ -82,16 +129,18 @@ export class Sticker {
     res.points = this.points.map(e => e.rotate(ref, dir, ang));
     res._cached_mass_center = this._cached_mass_center.rotate(ref, dir, ang);
     res.color = col || res.color;
-    res.vecs = res.vecs.map(v => v.rotate(CENTER, dir, ang));
+    res.vecs.map(v => v.rotate(CENTER, dir, ang, true));
+    res.computeBoundingBox();
     return res;
   }
 
   clone(excludePoints?: boolean): Sticker {
-    let s = new Sticker(excludePoints ? [] : this.points, this.color, this.types);
+    let s = new Sticker(excludePoints ? [] : this.points, this.color);
     s.color = this.color;
     s.oColor = this.oColor;
     s._cached_mass_center = this._cached_mass_center.clone();
     s.vecs = this.vecs.map(e => e.clone());
+    s.boundingBox = this.boundingBox.map(e => e.clone());
     return s;
   }
 
@@ -148,6 +197,8 @@ export class Sticker {
   reverse(): Sticker {
     let s = this.clone(true);
     s.points = this.points.map(p => p.clone()).reverse();
+    s.points.unshift( s.points[ s.points.length - 1 ] );
+    s.points.pop();
     return s;
   }
 

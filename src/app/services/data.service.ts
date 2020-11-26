@@ -18,7 +18,7 @@ export class DataService {
   tutSub: Subject< Tutorial[] >;
   solveSub: Subject< { type: string, data: Solve[] } >;
   sessSub: Subject< { type: string, data: Session | Session[] } >;
-
+  isElectron: boolean;
   constructor(private http: HttpClient, private ngZone: NgZone) {
     this.algSub = new Subject< Algorithm[] >();
     this.cardSub = new Subject< RawCard[] >();
@@ -26,12 +26,16 @@ export class DataService {
     this.solveSub = new Subject< { type: string, data: Solve[] } >();
     this.sessSub = new Subject< { type: string, data: Session[] } >();
   
-    let electron = window.require('electron');
+    if ( window.require ) {
+      let electron = window.require('electron'); 
+      this.ipc = electron.ipcRenderer;
+      this.window = electron.remote.getCurrentWindow();
+      this.isElectron = true;
+      this.setIpc();
+    } else {
+      this.isElectron = false;
+    }
     
-    this.ipc = electron.ipcRenderer;
-    this.window = electron.remote.getCurrentWindow();
-    
-    this.setIpc();
   }
 
   setIpc() {
@@ -74,78 +78,62 @@ export class DataService {
   }
 
   getAlgorithms(dir: string): void {
-    this.ipc.send('algorithms', dir);
+    this.isElectron && this.ipc.send('algorithms', dir);
   }
 
   getCards(): void {
-    this.ipc.send('cards');
+    this.isElectron && this.ipc.send('cards');
   }
 
-  sendCard(card: RawCard): Observable<any> {
-    return this.http.post('http://localhost/cards', card);
-  }
+  // sendCard(card: RawCard): Observable<any> {
+  //   return this.http.post('http://localhost/cards', card);
+  // }
 
   getTutorials() {
-    this.ipc.send('tutorials');
-  }
-
-  getCrosses(scramble: string) {
-    this.ipc.send('scramble', scramble);
+    this.isElectron && this.ipc.send('tutorials');
   }
 
   getSolves() {
-    this.ipc.send('get-solves');
-    // this.solveSub.next(records.split('\n').map(e => e.trim()).filter(e => e != '').map(e => {
-    //   let arr: string[] = JSON.parse('[' + e.replace(/;/g, ',') + ']');
-    //   return {
-    //     session: 'b19ahf90719fed9787c',
-    //     time: +arr[2],
-    //     date: +arr[3],
-    //     scramble: arr[4],
-    //     penalty: (arr[5] === "0") ? Penalty.NONE : (arr[5] === "1") ? Penalty.P2 : Penalty.DNF,
-    //     comments: arr[6],
-    //     selected: false
-    //   };
-    // }));
+    this.isElectron && this.ipc.send('get-solves');
   }
 
   addSolve(s: Solve) {
-    this.ipc.send('add-solve', s);
+    this.isElectron && this.ipc.send('add-solve', s);
   }
 
   updateSolve(s: Solve) {
-    this.ipc.send('update-solve', s);
+    this.isElectron && this.ipc.send('update-solve', s);
   }
 
   removeSolves(s: Solve[]) {
-    this.ipc.send('remove-solves', s.map(e => e._id));
+    this.isElectron && this.ipc.send('remove-solves', s.map(e => e._id));
   }
 
   getSessions() {
-    this.ipc.send('get-sessions');
+    this.isElectron && this.ipc.send('get-sessions');
   }
 
   addSession(s: Session) {
-    this.ipc.send('add-session', s);
+    this.isElectron && this.ipc.send('add-session', s);
   }
 
   removeSession(s: Session) {
-    this.ipc.send('remove-session', s);
+    this.isElectron && this.ipc.send('remove-session', s);
   }
 
   renameSession(s: Session) {
-    this.ipc.send('rename-session', s);
+    this.isElectron && this.ipc.send('rename-session', s);
   }
 
   minimize() {
-    this.ipc.send('minimize');
+    this.isElectron && this.ipc.send('minimize');
   }
 
   maximize() {
-    this.ipc.send('maximize');
+    this.isElectron && this.ipc.send('maximize');
   }
 
   close() {
-    this.ipc.send('close');
+    this.isElectron && this.ipc.send('close');
   }
 }

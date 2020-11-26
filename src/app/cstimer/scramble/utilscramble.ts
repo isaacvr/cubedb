@@ -220,7 +220,7 @@ function do15puzzle(mirrored, len, arrow?, tiny?) {
 	return retstr;
 }
 
-function pochscramble(x, y) {
+export function pochscramble(x, y) {
 	let ret = "";
 	let i, j;
 	for (i = 0; i < y; i++) {

@@ -81,14 +81,21 @@ export function getAllStickers(): Sticker[] {
 
 }
 
+export function scaleSticker(st: Sticker, scale: number): Sticker {
+  const SCALE = scale || 0.925;
+  let n = st.getOrientation();
+  // console.log("ORIENTATION: ", n);
+  let cm = st.updateMassCenter();
+  return st.sub(cm).mul(SCALE).add(cm).add( n.mul(0.005) );
+}
+
 export function roundStickerCorners(s: Sticker, rd?: number, scale?: number, ppc?: number): Sticker {
   const RAD = rd || 0.11;
   const PPC = ppc || 10;
   const C2k = [ 1, 2, 1 ];
   const SCALE = scale || 0.925;
 
-  let n = s.getOrientation();
-  let st = s.add(n.mul(0.005));
+  let st = s;
   let pts = st.points;
   let newSt = new Sticker();
 
@@ -107,12 +114,13 @@ export function roundStickerCorners(s: Sticker, rd?: number, scale?: number, ppc
     }
   }
 
-  newSt.updateMassCenter();
-  let cm = newSt.getMassCenter();
-  return newSt.sub(cm).mul(SCALE).add(cm);
+  return scaleSticker(newSt, SCALE);
 }
 
-export function roundCorners(p: PuzzleInterface, rd ?: number, scale ?: number, ppc ?: number, f ?: number, fn ?: Function) {
+export function roundCorners(
+  p: PuzzleInterface,
+  rd ?: number, scale ?: number, ppc ?: number,
+  fn ?: Function, justScale ?: boolean) {
   const CHECK = fn || (() => true);
 
   let pieces = p.pieces;
@@ -126,7 +134,10 @@ export function roundCorners(p: PuzzleInterface, rd ?: number, scale ?: number, 
         continue;
       }
 
-      let newSt = roundStickerCorners(s[j], rd, scale, ppc);
+      let newSt = (justScale)
+        ? scaleSticker(s[j], scale)
+        : roundStickerCorners(s[j], rd, scale, ppc);
+
       newSt.updateMassCenter();
 
       newSt.color = s[j].color;

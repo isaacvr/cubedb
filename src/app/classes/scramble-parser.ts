@@ -53,6 +53,11 @@ export class ScrambleParser {
     if ( !/R|D/.test(scramble) ) {
       // console.info('Carrot Notation');
       let moves = scramble.match(/[+-]{2}|U'?/g);
+      
+      if ( !moves ) {
+        return res;
+      }
+
       for (let i = 0, maxi = moves.length; i < maxi; i += 1) {
         switch(moves[i]) {
           case "U":

@@ -14,6 +14,9 @@ import { FISHER } from './fisher';
 import { IVY } from './ivy';
 import { CLOCK } from './clock';
 import { MEGAMINX } from './megaminx';
+import { MIRROR } from './mirror';
+import { DINO } from './dino';
+import { REX } from './rex';
 import { PuzzleType, CubeView } from '../../types';
 
 const protos = {
@@ -26,6 +29,9 @@ const protos = {
   ivy: IVY,
   clock: CLOCK,
   megaminx: MEGAMINX,
+  mirror: MIRROR,
+  dino: DINO,
+  rex: REX,
 };
 
 export class Puzzle {
@@ -52,6 +58,11 @@ export class Puzzle {
           this.view = '2d';
           break; 
       }
+    }
+
+    if ( this.type === 'mirror' ) {
+      this.view = 'trans';
+      this.mode = CubeMode.NORMAL;
     }
 
     this.setTips(options.tips || []);
@@ -450,6 +461,21 @@ export class Puzzle {
 
     return [rp, rs];
 
+  }
+
+  computeBoundingBox(): Vector3D[] {
+    let bbs = this.pieces.map(s => s.computeBoundingBox());
+    let box = bbs.reduce((ac, p) => {
+      return [
+        Math.min(ac[0], p[0].x), Math.min(ac[1], p[0].y), Math.min(ac[2], p[0].z),
+        Math.max(ac[3], p[1].x), Math.max(ac[4], p[1].y), Math.max(ac[5], p[1].z),
+      ]
+    }, [ Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity ]);
+
+    return [
+      new Vector3D(box[0], box[1], box[2]),
+      new Vector3D(box[3], box[4], box[5])
+    ];
   }
 
 }

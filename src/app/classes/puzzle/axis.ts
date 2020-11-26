@@ -1,3 +1,4 @@
+import { Vector3 } from 'three';
 import { Sticker } from './Sticker';
 import { LEFT, UP, BACK, FRONT, RIGHT, CENTER, DOWN } from './../vector3d';
 import { STANDARD_PALETTE } from '../../constants/constants';
@@ -24,6 +25,11 @@ export function AXIS(): PuzzleInterface {
   const L = 1;
   const PI = Math.PI;
   const PI_2 = PI / 2;
+  const vdir = [
+    BACK.add(UP).cross( LEFT.add( FRONT.div(2) ) ).unit(),
+    FRONT.add( RIGHT ).cross( DOWN.add( BACK.div(2) ) ).unit(),
+    BACK.add( RIGHT.div(2) ).cross( DOWN.add( LEFT ) ).unit(),
+  ];
 
   let A = UP.add(FRONT).mul(L);
   let B = RIGHT.add(UP).add(BACK).mul(L);
@@ -54,25 +60,28 @@ export function AXIS(): PuzzleInterface {
   let BCH = new Sticker([ B, C, H ]);
   let ADG = new Sticker([ D, G, A ]);
   let ACH = new Sticker([ C, A, H ]);
+
+  let plane1 = [ A, B, A.rotate(G, BACK, PI_2) ];
+  let plane2 = [ B, D, D.rotate(G, LEFT, PI_2) ];
+
+  let FH = F.project(plane1[0], plane1[1], plane1[2]);
+  let DH = D.project(plane1[0], plane1[1], plane1[2]);
+  let EH = E.project(plane1[0], plane1[1], plane1[2]);
+  let EH1 = E1.project(plane1[0], plane1[1], plane1[2]);
+  let CH = C.project(plane2[0], plane2[1], plane2[2]);
+  let AH = A.project(plane2[0], plane2[1], plane2[2]);
+  
+  let stCornerBig = new Sticker([ A, AH, DH, D ]);
+
   let cornerBig = new Piece([
     ADG,
-    ADG.rotate(CENTER, RIGHT, PI_2).rotate(CENTER, BACK, PI_2),
-    ADG.rotate(CENTER, UP, PI_2).rotate(CENTER, FRONT, PI_2),
-    new Sticker([ A, A.rotate(G, BACK, PI_2), D ])
+    ADG.rotate(G, G, 2 * PI / 3),
+    ADG.rotate(G, G, -2 * PI / 3),
+    new Sticker([ A, A.rotate(G, BACK, PI_2), D ]),
+    stCornerBig,
+    stCornerBig.rotate(G, G, 2 * PI / 3),
+    stCornerBig.rotate(G, G, -2 * PI / 3),
   ]);
-
-  let v1 = Vector3D.cross(A, B, A.rotate(G, BACK, PI_2)).unit();
-  let v2 = Vector3D.cross(B, D, D.rotate(G, LEFT, PI_2)).unit();
-
-  let dist = (p: Vector3D) => Math.abs(p.sub(A).dot(v1));
-  let dist1 = (p: Vector3D) => Math.abs(p.sub(B).dot(v2));
-
-  let FH = F.add( v1.mul( -dist(F) ) );
-  let DH = D.add( v1.mul( -dist(D) ) );
-  let EH = E.add( v1.mul( -dist(E) ) );
-  let EH1 = E1.add( v1.mul( -dist(E1) ) );
-  let CH = C.add( v2.mul( -dist1(C) ) );
-  let AH = A.add( v2.mul( -dist1(A) ) );
 
   let centerPiece = new Piece([
     DEF,
@@ -127,6 +136,24 @@ export function AXIS(): PuzzleInterface {
   for (let i = 6, maxi = 12; i < maxi; i += 1) {
     pieces.push(pieces[i].rotate(CENTER, UP, PI).rotate(CENTER, LEFT, PI_2));
   }
+
+  pieces.forEach(p => p.stickers.forEach(s => s.vecs = vdir.map(e => e.clone())));
+
+  axis.vectorsFromCamera = function(vecs: any[], cam) {
+    return vecs.map(e => {
+      let vp = new Vector3(e.x, e.y, e.z).project(cam);
+      return new Vector3D(vp.x, -vp.y, 0);
+    });
+  };
+
+  axis.toMove = function(piece: Piece, sticker: Sticker, dir: Vector3D) {
+    let mc = piece.updateMassCenter();
+    let toMovePieces = pieces.filter(p => p.direction1(mc, dir) === 0);
+    return {
+      pieces: toMovePieces,
+      ang: PI_2
+    };
+  };
 
   axis.rotation = {
     x: Math.PI / 6,

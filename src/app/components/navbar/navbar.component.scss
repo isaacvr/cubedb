@@ -21,5 +21,6 @@
     color: #{$text-dark};
     text-transform: uppercase;
     background-color: #{$accent};
+    z-index: 1000000;
   }
 }

@@ -4,6 +4,7 @@ import { ThemeService } from './services/theme.service';
 import { Component, AfterViewInit } from '@angular/core';
 import { CubeMode } from './constants/constants';
 import { PuzzleType } from './types';
+import { Vector3D } from './classes/vector3d';
 
 @Component({
   selector: 'app-root',

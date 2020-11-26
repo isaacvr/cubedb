@@ -58,8 +58,8 @@
     <mat-checkbox #timer type="checkbox" name="timer"></mat-checkbox>
     <mat-label>Timer...</mat-label>
 
-    <button type="submit" mat-stroked-button color="primary"
-      (click)="save(title.value, scramble.value, link.value, cubeType.value, cubeMode.value, order.value, timer.checked)">Save</button>
+    <!-- <button type="submit" mat-stroked-button color="primary"
+      (click)="save(title.value, scramble.value, link.value, cubeType.value, cubeMode.value, order.value, timer.checked)">Save</button> -->
   </div>
   <ul class="card-container">
     <mat-card *ngFor="let card of cards" class="card" [routerLink]="card.route">

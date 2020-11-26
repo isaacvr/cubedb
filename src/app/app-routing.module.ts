@@ -8,6 +8,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent } from './components/home/home.component';
 import { PllTrainerComponent } from './components/pll-trainer/pll-trainer.component';
+import { IterativePuzzleComponent } from './components/iterative-puzzle/iterative-puzzle.component';
 
 export function matcher(url) {
   if ( url.length >= 1 && url[0].path.match(/^algorithms$/) ) {
@@ -55,6 +56,10 @@ const routes: Routes = [
   {
     path: 'import_export',
     component: ImportExportComponent
+  },
+  {
+    path: 'simulator',
+    component: IterativePuzzleComponent
   }
 ];
 

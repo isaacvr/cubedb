@@ -1,0 +1,23 @@
+<table class="cnt" [class.expanded]="GUIExpanded">
+  <tr>
+    <td>Puzzle</td>
+    <td>
+      <mat-select [(value)]="selectedPuzzle" (selectionChange)="setOrder()">
+        <mat-option *ngFor="let p of puzzles" [value]="p.value">{{p.name}}</mat-option>
+      </mat-select>
+    </td>
+  </tr>
+  <tr>
+    <td>Order</td>
+    <td>
+      <mat-form-field>
+        <input [disabled]="!hasOrder" matInput [(ngModel)]="order" type="number" min="1" value="3">
+      </mat-form-field>
+    </td>
+  </tr>
+  <tr>
+    <td><button mat-stroked-button (click)="resetPuzzle()">Set</button></td>
+    <td><button mat-stroked-button (click)="hideGUI()">Done</button></td>
+  </tr>
+  <tr class="tune"><td colspan="2"> <mat-icon (click)="showGUI()" svgIcon="tune"></mat-icon> </td></tr>
+</table>

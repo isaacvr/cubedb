@@ -1,0 +1,29 @@
+.cnt {
+  position: absolute;
+  right: 6px;
+  top: 40px;
+  z-index: 1;
+  padding: 10px;
+  background: var(--light);
+  border-radius: 4px;
+  transition: all 300ms;
+
+  &.expanded {
+    top: 130px;
+    width: calc(100% - 12px);
+
+    .tune {
+      display: none;
+    }
+  }
+
+  &:not(.expanded) {
+    tr:not(.tune) {
+      display: none;
+    }
+  }
+
+  .tune {
+    cursor: pointer;
+  }
+}

@@ -108,8 +108,10 @@ export function SQUARE1(): PuzzleInterface {
     ]).reverse(),
   ]);
 
+  let vdir = mid.stickers[2].getOrientation();
+
   mid.stickers.forEach(s => {
-    s.vecs = [ mid.stickers[2].getOrientation().mul(-1), UP.clone() ];
+    s.vecs = [ vdir.mul(-1), UP.clone() ];
   });
   
   for (let i = 0; i < 4; i += 1) {

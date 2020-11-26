@@ -38,6 +38,7 @@ export function RUBIK(a: number, b?:number, c?:number): PuzzleInterface {
 
   const PI = Math.PI;
   const PI_2 = PI / 2;
+  const vdir = [ RIGHT, FRONT, UP ];
 
   for (let z = 0; z < c; z += 1) {
     for (let y = 0; y < b; y += 1) {
@@ -57,23 +58,23 @@ export function RUBIK(a: number, b?:number, c?:number): PuzzleInterface {
           anchor.add( DOWN.add(FRONT).mul(len) ),
           anchor.add( FRONT.mul(len) ),
         ], fc[4]);
-        sUp.vecs = [ RIGHT, FRONT, UP ].map(e => e.clone());
-        sLeft.vecs = [ RIGHT, FRONT, UP ].map(e => e.clone());
+        sUp.vecs = vdir.map(e => e.clone());
+        sLeft.vecs = vdir.map(e => e.clone());
         ( !isCube || z == 0 ) && p.stickers.push(sUp);
-        ( !isCube || x == a - 1 ) && p.stickers.push(sLeft.rotate(center, UP, PI, false, fc[1]));
-        ( !isCube || y == b - 1 ) && p.stickers.push(sLeft.rotate(center, UP, PI_2, false, fc[2]));
-        ( !isCube || z == c - 1 ) && p.stickers.push(sUp.rotate(center, RIGHT, PI, false, fc[3]));
+        ( !isCube || x == a - 1 ) && p.stickers.push(sLeft.rotate(center, UP, PI));
+        ( !isCube || y == b - 1 ) && p.stickers.push(sLeft.rotate(center, UP, PI_2));
+        ( !isCube || z == c - 1 ) && p.stickers.push(sUp.rotate(center, RIGHT, PI));
         ( !isCube || x == 0 ) && p.stickers.push(sLeft);
-        ( !isCube || y == 0 ) && p.stickers.push(sLeft.rotate(center, UP, -PI_2, false, fc[5]));
+        ( !isCube || y == 0 ) && p.stickers.push(sLeft.rotate(center, UP, -PI_2));
 
         if ( p.stickers.length ) {
-          if ( p.stickers.length === 1 && !isCube ) {
+          if ( p.stickers.length === 1 && isCube ) {
             if ( ( z == 0 || z == c - 1 ) && c > 1 ) {
-              p.stickers.push( p.stickers[0].rotate(center, RIGHT, PI, false, 'd') );
+              p.stickers.push( p.stickers[0].rotate(center, RIGHT, PI) );
             } else if ( ( x == 0 || x == a - 1 ) && a > 1 ) {
-              p.stickers.push( p.stickers[0].rotate(center, UP, PI, false, 'd') );
+              p.stickers.push( p.stickers[0].rotate(center, UP, PI) );
             } else if ( ( y == 0 || y == b - 1 ) && b > 1 ) {
-              p.stickers.push( p.stickers[0].rotate(center, UP, PI, false, 'd') );
+              p.stickers.push( p.stickers[0].rotate(center, UP, PI) );
             }
           }
           p.updateMassCenter();
@@ -154,8 +155,9 @@ export function RUBIK(a: number, b?:number, c?:number): PuzzleInterface {
   ];
 
   assignColors(rubik, rubik.faceColors);
-  isCube && roundCorners(rubik, null, null, null, null, (s: Sticker) => s.color != 'x');
+  isCube && roundCorners(rubik, null, null, null, (s: Sticker) => s.color != 'x');
   !isCube && roundCorners(rubik);
+  // roundCorners(rubik);
 
   return rubik;
 

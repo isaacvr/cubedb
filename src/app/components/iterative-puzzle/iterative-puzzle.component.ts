@@ -3,7 +3,8 @@ import { Vector3D, CENTER } from './../../classes/vector3d';
 import { cubeToThree } from 'app/cube-drawer';
 import { CubeMode } from './../../constants/constants';
 import { Puzzle } from './../../classes/puzzle/puzzle';
-import { Component } from '@angular/core';
+import { PuzzleType } from './../../types';
+import { Component, OnDestroy } from '@angular/core';
 import * as THREE from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 
@@ -97,12 +98,22 @@ function drag(piece: THREE.Intersection, ini: THREE.Vector2, fin: THREE.Vector2,
   templateUrl: './iterative-puzzle.component.html',
   styleUrls: ['./iterative-puzzle.component.scss']
 })
-export class IterativePuzzleComponent {
+export class IterativePuzzleComponent implements OnDestroy {
   cube: Puzzle;
   sensitivity: number = 3e-3;
   dragging: boolean = false;
   rx: number = 0;
   ry: number = 0;
+  renderer: THREE.WebGLRenderer;
+  scene: THREE.Scene;
+  group: THREE.Object3D;
+
+  /// GUI
+  puzzles: any[];
+  selectedPuzzle: PuzzleType;
+  order: number;
+  hasOrder: boolean;
+  GUIExpanded: boolean;
 
   /// Animation
   animating: boolean = false;
@@ -117,46 +128,63 @@ export class IterativePuzzleComponent {
     this.from = [];
     this.animBuffer = [];
 
-    this.cube = new Puzzle({
-      type: 'square1',
-      view: 'trans',
-      order: [3],
-      mode: CubeMode.NORMAL
-    });
+    this.GUIExpanded = false;
+    this.selectedPuzzle = 'rex';
+    this.order = 2;
+    this.hasOrder = false;
+    this.puzzles = [
+      { name: "Rubik's Cube (NxNxN)", value: "rubik", order: true },
+      { name: "Pyraminx", value: "pyraminx", order: true },
+      { name: "Mirror", value: "mirror", order: true },
+      { name: "Megaminx", value: "megaminx", order: false },
+      { name: "Skewb", value: "skewb", order: false },
+      { name: "Square One", value: "square1", order: false },
+      { name: "Fisher", value: "fisher", order: false },
+      { name: "Axis", value: "axis", order: false },
+      { name: "Ivy", value: "ivy", order: false },
+      { name: "Dino", value: "dino", order: false },
+      { name: "Rex", value: "rex", order: false },
+    ];
 
     let renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
       powerPreference: 'high-performance'
     });
-    
+
+    this.renderer = renderer;
+
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
 
     let canvas = renderer.domElement;
+
     document.body.appendChild(canvas);
+    canvas.style.position = 'absolute';
+    canvas.style.top = '0px';
+    canvas.style.left = '0px';
 
     let scene = new THREE.Scene();
-    let camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 2, 8);
+    this.scene = scene;
+
+    let camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 14);
     camera.position.x = 3.7640728163235093;
     camera.position.y = 1.865193066464847;
     camera.position.z = 3.550043754410077;
     camera.lookAt(0, 0, 0);
     camera.updateProjectionMatrix();
 
-    let group = cubeToThree(this.cube);
-
-    scene.add(group);
-
-    group.rotation.x = 0;
-    group.rotation.y = 0;
-    group.rotation.z = 0;
+    this.resetPuzzle();
 
     let piece: THREE.Intersection = null;
     let ini = null;
     let iniM = null;
     
     let downHandler = (event) => {
+      if ( event.preventDefault ) {
+        event.preventDefault();
+      }
+
       if ( this.animating ) {
         controls.enabled = false;
         return;
@@ -172,7 +200,7 @@ export class IterativePuzzleComponent {
 
       let allStickers = []
       
-      group.children.forEach(c => {
+      this.group.children.forEach(c => {
         allStickers.push(...c.children);
       });
 
@@ -196,7 +224,10 @@ export class IterativePuzzleComponent {
     };
 
     let moveHandler = (event) => {
-      
+      if ( event.preventDefault ) {
+        event.preventDefault();
+      }
+
       if ( !this.dragging ) {
         return;
       }
@@ -204,7 +235,7 @@ export class IterativePuzzleComponent {
       let fin = new THREE.Vector2(event.clientX, event.clientY);
 
       if ( piece && fin.clone().sub(ini).length() > 40 ) {
-        let data = drag(piece, ini, fin, this.cube, group, camera);
+        let data = drag(piece, ini, fin, this.cube, this.group, camera);
 
         if ( data ) {
           this.animBuffer = data.buffer;
@@ -214,8 +245,9 @@ export class IterativePuzzleComponent {
           this.from = this.animBuffer.map(g => g.clone());
           this.animating = true;
           this.timeIni = performance.now();
-          this.dragging = false;
         }
+
+        this.dragging = false;
       }
     };
 
@@ -231,7 +263,7 @@ export class IterativePuzzleComponent {
     controls.rotateSpeed = 3;
     controls.noPan = true;
     controls.minDistance = 4;
-    controls.maxDistance = 6;
+    controls.maxDistance = 8;
 
     window.addEventListener('resize', () => {
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -243,7 +275,7 @@ export class IterativePuzzleComponent {
     let interpolate = (data: THREE.Geometry[], from: THREE.Geometry[], ang: number, alpha: number) => {
       for (let i = 0, maxi = data.length; i < maxi; i += 1) {
         data[i].vertices.forEach((v, p) => {
-          let vec = tToV(from[i].vertices[p]).rotate(CENTER, this.u, ang);
+          let vec = tToV(from[i].vertices[p]).rotate(this.cube.p.center, this.u, ang);
           v.set(vec.x, vec.y, vec.z);
         });
         data[i].verticesNeedUpdate = true;
@@ -261,7 +293,7 @@ export class IterativePuzzleComponent {
           this.animating = false;
           interpolate(this.animBuffer, this.from, this.ang, 1);
           this.userData.forEach((p: Piece) => {
-            p.rotate(CENTER, this.u, this.ang, true);
+            p.rotate(this.cube.p.center, this.u, this.ang, true);
           });
           this.animBuffer.length = 0;
           this.from.length = 0;
@@ -276,6 +308,45 @@ export class IterativePuzzleComponent {
 
     animate();
 
+  }
+
+  ngOnDestroy() {
+    this.renderer.domElement.remove();
+    this.renderer.dispose();
+  }
+
+  /// GUI
+  setOrder() {
+    this.hasOrder = this.puzzles.find(p => p.value === this.selectedPuzzle).order;
+  }
+
+  resetPuzzle() {
+    let children = this.scene.children;
+    this.scene.remove( ...children );
+    
+    this.cube = new Puzzle({
+      type: this.selectedPuzzle,
+      view: 'trans',
+      order: [ this.order, this.order, this.order ],
+      mode: CubeMode.NORMAL
+    });
+
+    this.group = cubeToThree(this.cube);
+
+    this.scene.add(this.group);
+
+    this.group.rotation.x = 0;
+    this.group.rotation.y = 0;
+    this.group.rotation.z = 0;
+    // console.log("RESET: ", this.selectedPuzzle);
+  }
+
+  hideGUI() {
+    this.GUIExpanded = false;
+  }
+
+  showGUI() {
+    this.GUIExpanded = true;
   }
 
 }

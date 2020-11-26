@@ -617,7 +617,7 @@ function clockImage(cube: Puzzle, DIM: number): string {
   return canvas.toDataURL();
 }
 
-export function cubeToThree(cube: Puzzle) {
+export function cubeToThree(cube: Puzzle, F: number = 1) {
   let group = new THREE.Object3D();
   let pieces = cube.pieces;
 
@@ -628,8 +628,8 @@ export function cubeToThree(cube: Puzzle) {
     piece.userData = pieces[p];
 
     for (let s = 0, maxs = stickers.length; s < maxs; s += 1) {
-      // let sticker = stickers[s].mul(F);
-      let sticker = stickers[s];
+      let sticker = stickers[s].mul(F);
+      // let sticker = stickers[s];
       let color = cube.getHexColor( sticker.color );
       // let stickerGeometry = new THREE.BufferGeometry();
       let stickerGeometry = new THREE.Geometry(); 
@@ -733,7 +733,7 @@ export function generateCubeBundle(cubes: Puzzle[], width ?: number, all ?: bool
         }
       } else {
 
-        let group = cubeToThree(cube);
+        let group = cubeToThree(cube, cube.type === 'megaminx' ? Math.sqrt(7) / 2 : 1);
 
         scene.add(group);
 

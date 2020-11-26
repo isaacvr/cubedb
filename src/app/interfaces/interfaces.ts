@@ -7,10 +7,11 @@ import { CubeMode } from "../constants/constants";
 
 export interface Card {
   title: string;
-  cube: Puzzle | string;
+  cube: string;
   ready: boolean;
   route: string;
   timer?: boolean;
+  puzzle?: Puzzle;
 }
 
 export interface RawCard {
