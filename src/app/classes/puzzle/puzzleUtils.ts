@@ -6,6 +6,8 @@ export function assignColors(p: PuzzleInterface, cols ?: string[]) {
   let colors = cols || [ 'y', 'o', 'g', 'w', 'r', 'b' ];
 
   let stickers: Sticker[] = p.getAllStickers();
+  let pieces = p.pieces;
+  console.log("ALLSTICKERS: ", stickers.length);
 
   for (let i = 0, maxi = stickers.length; i < maxi; i += 1) {
     let sticker = stickers[i];
@@ -39,8 +41,8 @@ export function assignColors(p: PuzzleInterface, cols ?: string[]) {
     let dirs = [0, 0, 0];
     let ok = false;
 
-    for (let j = 0, maxj = p.pieces.length; j < maxj; j += 1) {
-      dirs[ p.pieces[j].direction(p1, p2, p3, true) + 1] += 1;
+    for (let j = 0, maxj = pieces.length; j < maxj; j += 1) {
+      dirs[ pieces[j].direction(p1, p2, p3, true) + 1] += 1;
       if ( dirs[0] > 0 && dirs[2] > 0 ) {
         sticker.color = 'x';
         sticker.oColor = 'x';

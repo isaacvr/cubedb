@@ -12,6 +12,7 @@ import { DINO } from './dino';
 import { REX } from './rex';
 import { REDI } from './redi';
 import { MIXUP } from './mixup';
+import { PYRAMORPHIX } from './pyramorphix';
 import { registerPuzzle } from './puzzleRegister';
 
 registerPuzzle("rubik", "Rubik's Cube", RUBIK, true);
@@ -28,3 +29,4 @@ registerPuzzle("dino", "Dino", DINO, false);
 registerPuzzle("rex", "Rex", REX, false);
 registerPuzzle("redi", "Redi", REDI, false);
 registerPuzzle("mixup", "Mixup", MIXUP, false);
+registerPuzzle("pyramorphix", "Pyramorphix", PYRAMORPHIX, false);

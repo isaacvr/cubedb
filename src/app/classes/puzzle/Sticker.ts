@@ -10,14 +10,14 @@ export class Sticker {
 
   private _cached_mass_center: Vector3D;
 
-  constructor(pts?: Vector3D[], color?: string) {
+  constructor(pts?: Vector3D[], color?: string, vecs ?: Vector3D[]) {
     this.points = (pts || []).map(e => e.clone());
     this.oColor = color || 'w';
     this.color = this.oColor;
     this.updateMassCenter();
     this.computeBoundingBox();
     this._generator = this;
-    this.vecs = [];
+    this.vecs = (vecs || []).map(v => v.clone());
   }
 
   computeBoundingBox(): Vector3D[] {

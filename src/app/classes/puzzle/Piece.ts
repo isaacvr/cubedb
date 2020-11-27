@@ -172,6 +172,12 @@ export class Piece {
     );
   }
 
+  reflect1(a: Vector3D, u: Vector3D, preserveOrientation?: boolean): Piece {
+    return new Piece(
+      this.stickers.map(s => s.reflect1(a, u, preserveOrientation))
+    );
+  }
+ 
   reverse(): Piece {
     return new Piece(
       this.stickers.map(s => s.reverse())

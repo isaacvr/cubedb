@@ -142,6 +142,10 @@ export class Vector3D {
     return new Vector3D(1, 0, 0);
   }
 
+  proj(a: Vector3D): Vector3D {
+    return a.setLength( this.dot(a) / a.abs() );
+  }
+
   setLength(n: number): Vector3D {
     return this.unit().mul(n);
   }
