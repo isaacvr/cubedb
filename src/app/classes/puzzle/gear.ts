@@ -113,6 +113,8 @@ export function GEAR(): PuzzleInterface {
   let wy = [ 0, 0.22, 0.22, 0.149, 0.15, 0 ];
 
   let wingSticker = stickerFromPath(wx, wy, CENTER, FRONT, LEFT);
+  wingSticker.vecs = [ RIGHT ];
+
   let wingPiece = new Piece([ wingSticker ]);
 
   for (let i = 0; i < 4; i += 1) {
@@ -160,7 +162,11 @@ export function GEAR(): PuzzleInterface {
     });
   };
 
-  gear.toMove = function(piece: Piece, sticker: Sticker, dir: Vector3D) {;
+  gear.toMove = function(piece: Piece, sticker: Sticker, dir: Vector3D) {
+    if ( ![ LEFT, UP, FRONT ].reduce((ac, v) => ac || v.cross(dir).abs() < 1e-6, false) ) {
+      return [];
+    }
+
     let toMovePieces = pieces.filter(p => {
       let goodStickers = p.stickers.filter(s => s.color != 'd');
       return goodStickers.reduce((ac, s) => ac || s.direction1(CENTER, dir) >= 0, false);
