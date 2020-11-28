@@ -7,7 +7,6 @@ export function assignColors(p: PuzzleInterface, cols ?: string[]) {
 
   let stickers: Sticker[] = p.getAllStickers();
   let pieces = p.pieces;
-  console.log("ALLSTICKERS: ", stickers.length);
 
   for (let i = 0, maxi = stickers.length; i < maxi; i += 1) {
     let sticker = stickers[i];

@@ -34,8 +34,8 @@ function drag(piece: THREE.Intersection, ini: THREE.Vector2, fin: THREE.Vector2,
  
   let faceVectors = cube.p.vectorsFromCamera(vecs, camera, u);
 
-  let dir;
-  let best;
+  let dir: number;
+  let best: Vector3D;
 
   // console.log("FACE_VECTORS: ", faceVectors);
 
@@ -49,23 +49,21 @@ function drag(piece: THREE.Intersection, ini: THREE.Vector2, fin: THREE.Vector2,
     return ac;
   }, -Infinity);
 
-  // console.log("BEST_DIR: ", best, dir);
-
   if ( !best ) {
     return null;
   }
 
-  let animationBuffer: THREE.Geometry[] = [];
-  let userData: any[] = [];
+  let animationBuffer: THREE.Geometry[][] = [];
+  let userData: any[][] = [];
+  let angs: number[] = [];
+  let animationTimes: number[] = [];
 
   let toMove = cube.p.toMove(pc[0], pc[1], best);
-  let piecesToMove: Piece[] = toMove.pieces;
+  let groupToMove = ( Array.isArray(toMove) ) ? toMove : [ toMove ];
 
-  // console.log('TOMOVE: ', toMove);
-
-  let findPiece = (p: Piece): boolean => {
-    for (let i = 0, maxi = piecesToMove.length; i < maxi; i += 1) {
-      if ( piecesToMove[i].equal(p) ) {
+  let findPiece = (p: Piece, arr: Piece[]): boolean => {
+    for (let i = 0, maxi = arr.length; i < maxi; i += 1) {
+      if ( arr[i].equal(p) ) {
         return true;
       }
     }
@@ -73,16 +71,27 @@ function drag(piece: THREE.Intersection, ini: THREE.Vector2, fin: THREE.Vector2,
     return false;
   };
 
-  group.children.forEach(p => {
-    let c: THREE.Mesh[] = <THREE.Mesh[]> p.children;
+  groupToMove.forEach(g => {
+    let pieces: Piece[] = g.pieces;
+    let subBuffer: THREE.Geometry[] = [];
+    let subUserData = [];
 
-    if ( findPiece(<Piece> p.userData) ) {
-      userData.push( p.userData );
-      for (let i = 0, maxi = c.length; i < maxi; i += 1) {
-        let gm1 = <THREE.Geometry>c[i].geometry;
-        animationBuffer.push( gm1 );
+    group.children.forEach(p => {
+      let c: THREE.Mesh[] = <THREE.Mesh[]> p.children;
+
+      if ( findPiece(<Piece> p.userData, pieces) ) {
+        subUserData.push( p.userData );
+        for (let i = 0, maxi = c.length; i < maxi; i += 1) {
+          let gm1 = <THREE.Geometry>c[i].geometry;
+          subBuffer.push( gm1 );
+        }
       }
-    }
+    });
+
+    userData.push( subUserData );
+    animationBuffer.push(subBuffer);
+    angs.push( g.ang );
+    animationTimes.push( g.animationTime );
   });
 
   return {
@@ -90,10 +99,13 @@ function drag(piece: THREE.Intersection, ini: THREE.Vector2, fin: THREE.Vector2,
     userData,
     u: best,
     dir,
-    ang: toMove.ang
+    ang: angs,
+    animationTime: animationTimes
   };
 
 }
+
+const ANIMATION_TIME = 300; /// Default animation time: 300ms
 
 @Component({
   selector: 'app-iterative-puzzle',
@@ -120,18 +132,18 @@ export class IterativePuzzleComponent implements OnDestroy {
   /// Animation
   animating: boolean = false;
   timeIni: number; 
-  animationTime: number = 300;
-  from: THREE.Geometry[];
-  animBuffer: THREE.Geometry[];
-  userData: any[];
+  animationTimes: number[] = [];
+  from: THREE.Geometry[][];
+  animBuffer: THREE.Geometry[][];
+  userData: any[][];
   u: Vector3D;
-  ang: number;
+  angs: number[];
   constructor() {
     this.from = [];
     this.animBuffer = [];
 
     this.GUIExpanded = false;
-    this.selectedPuzzle = 'pyramorphix';
+    this.selectedPuzzle = 'gear';
     this.order = 2;
     this.hasOrder = false;
 
@@ -212,7 +224,6 @@ export class IterativePuzzleComponent implements OnDestroy {
       if ( intersects.length > 0 ) {
         if ( (<any>intersects[0].object).material.color.getHex() ) {
           piece = intersects[0];
-          // console.log('INTERSECTION: ', piece);
         }
         controls.enabled = false;
       }
@@ -242,8 +253,9 @@ export class IterativePuzzleComponent implements OnDestroy {
           this.animBuffer = data.buffer;
           this.userData = data.userData;
           this.u = data.u;
-          this.ang = data.dir * data.ang;
-          this.from = this.animBuffer.map(g => g.clone());
+          this.angs = data.ang.map(a => a * data.dir);
+          this.from = this.animBuffer.map(g => g.map(e => e.clone()));
+          this.animationTimes = data.animationTime.map(e => e || ANIMATION_TIME);
           this.animating = true;
           this.timeIni = performance.now();
         }
@@ -273,10 +285,23 @@ export class IterativePuzzleComponent implements OnDestroy {
       controls.handleResize();
     });
     
-    let interpolate = (data: THREE.Geometry[], from: THREE.Geometry[], ang: number, alpha: number) => {
+    let interpolate = (data: THREE.Geometry[], from: THREE.Geometry[], ang: number, userData: Piece[]) => {
+      let allStickers = userData.reduce((ac, p) => {
+        let p1 = p.clone(true);
+
+        if ( p1.hasCallback ) {
+          p1.callback(p1, this.cube.p.center, this.u, ang);
+        } else {
+          p1.rotate(this.cube.p.center, this.u, ang, true);
+        }
+
+        ac.push( ...p1.stickers );
+        return ac;
+      }, []);
+
       for (let i = 0, maxi = data.length; i < maxi; i += 1) {
         data[i].vertices.forEach((v, p) => {
-          let vec = tToV(from[i].vertices[p]).rotate(this.cube.p.center, this.u, ang);
+          let vec = allStickers[i].points[p];
           v.set(vec.x, vec.y, vec.z);
         });
         data[i].verticesNeedUpdate = true;
@@ -286,25 +311,45 @@ export class IterativePuzzleComponent implements OnDestroy {
     };
 
     let animate = () => {
-      requestAnimationFrame( animate );
       
       if ( this.animating ) {
-        let alpha = (performance.now() - this.timeIni) / this.animationTime;
-        if ( alpha > 1 ) {
+        let total = this.animBuffer.length;
+        let done = this.animBuffer.map(e => false);
+        let animating = 0;
+
+        for (let i = 0; i < total; i += 1) {
+          if ( done[i] ) {
+            continue;
+          }
+          let animationTime = this.animationTimes[i];
+          let alpha = (performance.now() - this.timeIni) / animationTime;
+          if ( alpha > 1 ) {
+            interpolate(this.animBuffer[i], this.from[i], this.angs[i], this.userData[i]);
+            this.userData[i].forEach((p: Piece) => {
+              if ( p.hasCallback ) {
+                p.callback(p, this.cube.p.center, this.u, this.angs[i]);
+              } else {
+                p.rotate(this.cube.p.center, this.u, this.angs[i], true);
+              }
+            });
+            this.userData[i].length = 0;
+            this.animBuffer[i].length = 0;
+            this.from[i].length = 0;
+            done[i] = true;
+          } else {
+            animating += 1;
+            interpolate(this.animBuffer[i], this.from[i], this.angs[i] * alpha, this.userData[i]);
+          }
+        }
+
+        if ( animating === 0 ) {
           this.animating = false;
-          interpolate(this.animBuffer, this.from, this.ang, 1);
-          this.userData.forEach((p: Piece) => {
-            p.rotate(this.cube.p.center, this.u, this.ang, true);
-          });
-          this.animBuffer.length = 0;
-          this.from.length = 0;
-        } else {
-          interpolate(this.animBuffer, this.from, this.ang * alpha, alpha);
         }
       }
 
       controls.update();
       renderer.render(scene, camera);
+      requestAnimationFrame( animate );
     }
 
     animate();
@@ -339,7 +384,6 @@ export class IterativePuzzleComponent implements OnDestroy {
     this.group.rotation.x = 0;
     this.group.rotation.y = 0;
     this.group.rotation.z = 0;
-    // console.log("RESET: ", this.selectedPuzzle);
   }
 
   hideGUI() {

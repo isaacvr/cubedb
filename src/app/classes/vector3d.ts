@@ -52,6 +52,14 @@ export class Vector3D {
     return Vector3D.project1(this, a, u);
   }
 
+  reflect(a: Vector3D, b: Vector3D, c: Vector3D, self?: boolean): Vector3D {
+    return this.reflect1(a, Vector3D.cross(a, b, c).unit(), self);
+  }
+
+  reflect1(a: Vector3D, u: Vector3D, self?: boolean): Vector3D {
+    return this.add( u.mul( -2 * this.sub(a).dot(u) ), self );
+  }
+
   cross(v: Vector3D): Vector3D {
     return new Vector3D(
       this.y * v.z - this.z * v.y,

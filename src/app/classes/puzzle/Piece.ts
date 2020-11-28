@@ -5,19 +5,29 @@ import { Sticker } from './Sticker';
 export class Piece {
   stickers: Sticker[];
   boundingBox: Vector3D[];
+  hasCallback: boolean;
+  callback: Function;
+  anchor: Vector3D;
 
   private _cached_mass_center: Vector3D;
   constructor(stickers?: Sticker[]) {
     this.stickers = (stickers || []).map(e => e.clone());
     this.updateMassCenter();
     this.computeBoundingBox();
+    this.hasCallback = false;
+    this.callback = null;
   }
 
-  updateMassCenter(): Vector3D {
+  updateMassCenter(recursive?: boolean): Vector3D {
     let pts = this.getAllPoints();
     let sum = pts.reduce((s, e) => s.add(e), new Vector3D());
     this._cached_mass_center = sum.div(pts.length || 1);
-    return this._cached_mass_center;
+    
+    if ( recursive ) {
+      this.stickers.forEach(s => s.updateMassCenter());
+    }
+
+     return this._cached_mass_center;
   }
 
   get length(): number {
@@ -59,9 +69,11 @@ export class Piece {
       this.stickers.forEach(s => s.add(ref, true));
       this.boundingBox.forEach(s => s.add(ref, true));
       this._cached_mass_center.add(ref, true);
+      this.anchor && this.anchor.add(ref, true);
       return this;
     }
-    return new Piece(this.stickers.map(s => s.add(ref)));
+    return this.clone().add(ref, true);
+    // return new Piece(this.stickers.map(s => s.add(ref)));
   }
   
   sub(ref: Vector3D, self ?: boolean): Piece {
@@ -69,9 +81,11 @@ export class Piece {
       this.stickers.forEach(s => s.sub(ref, true));
       this.boundingBox.forEach(s => s.sub(ref, true));
       this._cached_mass_center.sub(ref, true);
+      this.anchor && this.anchor.sub(ref, true);
       return this;
     }
-    return new Piece(this.stickers.map(s => s.sub(ref)));
+    return this.clone().sub(ref, true);
+    // return new Piece(this.stickers.map(s => s.sub(ref)));
   }
 
   mul(f: number, self ?: boolean): Piece {
@@ -79,9 +93,11 @@ export class Piece {
       this.stickers.forEach(s => s.mul(f, true));
       this.boundingBox.forEach(s => s.mul(f, true));
       this._cached_mass_center.mul(f, true);
+      this.anchor && this.anchor.mul(f, true);
       return this;
     }
-    return new Piece(this.stickers.map(s => s.mul(f)));
+    return this.clone().mul(f, true);
+    // return new Piece(this.stickers.map(s => s.mul(f)));
   }
 
   div(f: number): Piece {
@@ -89,9 +105,11 @@ export class Piece {
       this.stickers.forEach(s => s.div(f, true));
       this.boundingBox.forEach(s => s.div(f, true));
       this._cached_mass_center.div(f, true);
+      this.anchor && this.anchor.div(f, true);
       return this;
     }
-    return new Piece( this.stickers.map(s => s.div(f)));
+    return this.clone().div(f);
+    // return new Piece( this.stickers.map(s => s.div(f) ));
   }
 
   rotate(ref: Vector3D, dir: Vector3D, ang: number, self ?: boolean): Piece {
@@ -99,11 +117,13 @@ export class Piece {
       this.stickers.map(s => s.rotate(ref, dir, ang, true));
       this._cached_mass_center.rotate(ref, dir, ang, true);
       this.computeBoundingBox();
+      this.anchor && this.anchor.rotate(ref, dir, ang, true);
       return this;
     }
     let p = new Piece();
     p.stickers = this.stickers.map(s => s.rotate(ref, dir, ang));
     p._cached_mass_center = this._cached_mass_center.rotate(ref, dir, ang);
+    this.anchor && (p.anchor = this._cached_mass_center.rotate(ref, dir, ang));
     p.computeBoundingBox();
     return p;
   }
@@ -167,15 +187,28 @@ export class Piece {
   }
 
   reflect(p1: Vector3D, p2: Vector3D, p3: Vector3D, preserveOrientation?: boolean): Piece {
-    return new Piece(
-      this.stickers.map(s => s.reflect(p1, p2, p3, preserveOrientation))
-    );
+    let res = this.clone();
+    res.stickers = res.stickers.map(s => s.reflect(p1, p2, p3));
+    res.anchor && (res.anchor = res.anchor.reflect(p1, p2, p3));
+    res.computeBoundingBox();
+    if ( preserveOrientation ) {
+      res.stickers.forEach(s => s.reverse(true));
+    }
+    return res;
   }
 
   reflect1(a: Vector3D, u: Vector3D, preserveOrientation?: boolean): Piece {
-    return new Piece(
-      this.stickers.map(s => s.reflect1(a, u, preserveOrientation))
-    );
+    let res = this.clone();
+    res.stickers = res.stickers.map(s => s.reflect1(a, u));
+    res.anchor && (res.anchor = res.anchor.reflect1(a, u));
+    res.computeBoundingBox();
+    if ( preserveOrientation ) {
+      res.stickers.forEach(s => s.reverse(true));
+    }
+    return res;
+    // return new Piece(
+    //   this.stickers.map(s => s.reflect1(a, u, preserveOrientation))
+    // );
   }
  
   reverse(): Piece {
@@ -194,8 +227,14 @@ export class Piece {
     return false;
   }
 
-  clone() {
-    return new Piece( this.stickers );
+  clone(withCallback ?: boolean) {
+    let res = new Piece ( this.stickers );
+    if ( withCallback && this.hasCallback ) {
+      res.hasCallback = this.hasCallback;
+      res.callback = this.callback;
+    }
+    this.anchor && (res.anchor = this.anchor.clone());
+    return res;
   }
 
   equal(p1: Piece): boolean {
