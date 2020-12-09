@@ -8,7 +8,7 @@ export class Sticker {
   vecs: Vector3D[];
   boundingBox: Vector3D[];
 
-  private _cached_mass_center: Vector3D;
+  _cached_mass_center: Vector3D;
 
   constructor(pts?: Vector3D[], color?: string, vecs ?: Vector3D[]) {
     this.points = (pts || []).map(e => e.clone());
@@ -135,6 +135,7 @@ export class Sticker {
   }
 
   clone(excludePoints?: boolean): Sticker {
+    // console.log('Sticker Clone()');
     let s = new Sticker(excludePoints ? [] : this.points, this.color);
     s.color = this.color;
     s.oColor = this.oColor;

@@ -155,10 +155,20 @@ export class Color {
     return res;
   }
 
-  toHex() {
+  toHex(alpha: boolean = true): string {
     let t = this.color.map(e => e);
     t[3] = adjust(t[3] * 255);
+    !alpha && t.pop();
     return '#' + t.map(e => ('00' + e.toString(16)).substr(-2, 2)).join('');
+  }
+
+  toNumber(): number {
+    let res = 0;
+    for (let i = 0; i < 3; i += 1) {
+      res *= 256;
+      res += this.color[i];
+    }
+    return res;
   }
 
   toRGBStr(): string {

@@ -1,3 +1,4 @@
+import { FaceSticker } from './FaceSticker';
 import { Vector3 } from 'three';
 import { Vector3D } from '../vector3d';
 import { Sticker } from './Sticker';
@@ -11,7 +12,11 @@ export class Piece {
 
   private _cached_mass_center: Vector3D;
   constructor(stickers?: Sticker[]) {
+    // if ( stickers && stickers.length > 0 ) {
+    //   console.log("Piece constructor: ", stickers[0] instanceof FaceSticker);
+    // }
     this.stickers = (stickers || []).map(e => e.clone());
+    // console.log("STICKERS:::::: ", this.stickers.map(s => s instanceof FaceSticker));
     this.updateMassCenter();
     this.computeBoundingBox();
     this.hasCallback = false;

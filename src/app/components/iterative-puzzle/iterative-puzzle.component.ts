@@ -1,13 +1,13 @@
 import { Piece } from './../../classes/puzzle/Piece';
-import { Vector3D, CENTER } from './../../classes/vector3d';
-import { cubeToThree } from 'app/cube-drawer';
+import { Vector3D } from './../../classes/vector3d';
+import { cubeToThree } from '../../cube-drawer';
 import { CubeMode } from './../../constants/constants';
 import { Puzzle } from './../../classes/puzzle/puzzle';
 import { PuzzleType } from './../../types';
 import { Component, OnDestroy } from '@angular/core';
 import * as THREE from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
-import { puzzleReg } from 'app/classes/puzzle/puzzleRegister';
+import { puzzleReg } from '../../classes/puzzle/puzzleRegister';
 
 function tToV(v1: THREE.Vector3): Vector3D {
   return new Vector3D(v1.x, v1.y, v1.z);
@@ -31,7 +31,7 @@ function drag(piece: THREE.Intersection, ini: THREE.Vector2, fin: THREE.Vector2,
   let vecs = pc[1].vecs.filter(v => v.cross(u).abs() > 1e-6 );
   let v = fin.clone().sub(ini);
   let vv = new Vector3D(v.x, v.y, 0);
- 
+
   let faceVectors = cube.p.vectorsFromCamera(vecs, camera, u);
 
   let dir: number;
@@ -131,7 +131,7 @@ export class IterativePuzzleComponent implements OnDestroy {
 
   /// Animation
   animating: boolean = false;
-  timeIni: number; 
+  timeIni: number;
   animationTimes: number[] = [];
   from: THREE.Geometry[][];
   animBuffer: THREE.Geometry[][];
@@ -143,7 +143,7 @@ export class IterativePuzzleComponent implements OnDestroy {
     this.animBuffer = [];
 
     this.GUIExpanded = false;
-    this.selectedPuzzle = 'gear';
+    this.selectedPuzzle = 'dreidel';
     this.order = 3;
     this.hasOrder = false;
 
@@ -173,6 +173,7 @@ export class IterativePuzzleComponent implements OnDestroy {
     let canvas = renderer.domElement;
 
     document.body.appendChild(canvas);
+
     canvas.style.position = 'absolute';
     canvas.style.top = '0px';
     canvas.style.left = '0px';
@@ -192,7 +193,7 @@ export class IterativePuzzleComponent implements OnDestroy {
     let piece: THREE.Intersection = null;
     let ini = null;
     let iniM = null;
-    
+
     let downHandler = (event) => {
       if ( event.preventDefault ) {
         event.preventDefault();
@@ -212,13 +213,13 @@ export class IterativePuzzleComponent implements OnDestroy {
       );
 
       let allStickers = []
-      
+
       this.group.children.forEach(c => {
         allStickers.push(...c.children);
       });
 
       let intersects = mouseIntersection(iniM.x, iniM.y, allStickers, camera);
-      
+
       piece = null;
 
       if ( intersects.length > 0 ) {
@@ -271,7 +272,8 @@ export class IterativePuzzleComponent implements OnDestroy {
     canvas.addEventListener('touchstart', (e) => { downHandler(e.touches[0]); }, false);
     canvas.addEventListener('touchend', upHandler, false);
     canvas.addEventListener('touchmove', (e) =>  { moveHandler(e.touches[0]); }, false);
-    
+    //*/
+
     let controls = new TrackballControls(camera, canvas);
     controls.rotateSpeed = 3;
     controls.noPan = true;
@@ -284,7 +286,7 @@ export class IterativePuzzleComponent implements OnDestroy {
       camera.updateProjectionMatrix();
       controls.handleResize();
     });
-    
+
     let interpolate = (data: THREE.Geometry[], from: THREE.Geometry[], ang: number, userData: Piece[]) => {
       let allStickers = userData.reduce((ac, p) => {
         let p1 = p.clone(true);
@@ -311,7 +313,7 @@ export class IterativePuzzleComponent implements OnDestroy {
     };
 
     let animate = () => {
-      
+
       if ( this.animating ) {
         let total = this.animBuffer.length;
         let done = this.animBuffer.map(e => false);
@@ -369,7 +371,7 @@ export class IterativePuzzleComponent implements OnDestroy {
   resetPuzzle() {
     let children = this.scene.children;
     this.scene.remove( ...children );
-    
+
     this.cube = new Puzzle({
       type: this.selectedPuzzle,
       view: 'trans',
@@ -380,6 +382,12 @@ export class IterativePuzzleComponent implements OnDestroy {
     this.group = cubeToThree(this.cube);
 
     this.scene.add(this.group);
+
+    // let light = new THREE.HemisphereLight('#ffffff', '#000000', 0.5);
+    let light = new THREE.PointLight("#ffffff", 1, 2, 3);
+    light.position.set(2, 2, 2);
+
+    this.scene.add(light);
 
     this.group.rotation.x = 0;
     this.group.rotation.y = 0;

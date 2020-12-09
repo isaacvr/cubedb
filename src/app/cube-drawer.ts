@@ -5,6 +5,7 @@ import { Observable, Observer } from 'rxjs';
 import { Puzzle } from './classes/puzzle/puzzle';
 import * as THREE from 'three';
 import { roundStickerCorners } from './classes/puzzle/puzzleUtils';
+import { FaceSticker } from './classes/puzzle/FaceSticker';
 
 function map(v, a, b, A, B) {
   return (v - a) * (B - A) / (b - a) + A;
@@ -628,21 +629,36 @@ export function cubeToThree(cube: Puzzle, F: number = 1) {
     piece.userData = pieces[p];
 
     for (let s = 0, maxs = stickers.length; s < maxs; s += 1) {
-      let sticker = stickers[s].mul(F);
-      // let sticker = stickers[s];
+      let sticker = stickers[s].mul(F); 
       let color = cube.getHexColor( sticker.color );
-      // let stickerGeometry = new THREE.BufferGeometry();
       let stickerGeometry = new THREE.Geometry(); 
-
-      let stickerMaterial = new THREE.MeshBasicMaterial({
-        color,
-        side: THREE.DoubleSide
-      });
+      let stickerMaterial: THREE.Material;
 
       stickerGeometry.vertices.push( ...sticker.points.map(p => new THREE.Vector3(p.x, p.y, p.z)) );
 
-      for (let i = 2, maxi = sticker.points.length; i < maxi; i += 1) {
-        stickerGeometry.faces.push( new THREE.Face3(0, i - 1, i) );
+      if ( sticker instanceof FaceSticker ) {
+        stickerMaterial = new THREE.MeshBasicMaterial({
+          color: 0xffffff,
+          side: THREE.DoubleSide,
+          vertexColors: true
+        });
+
+        let f = sticker.faces;
+        for (let i = 0, maxi = f.length; i < maxi; i += 1) {
+          let face = new THREE.Face3(f[i][0], f[i][1], f[i][2], null);
+          face.color.setHex( color );
+          stickerGeometry.faces.push(face);
+        }
+        stickerGeometry.colorsNeedUpdate = true;
+      } else {
+        stickerMaterial = new THREE.MeshBasicMaterial({
+          color,
+          side: THREE.DoubleSide
+        });
+
+        for (let i = 2, maxi = sticker.points.length; i < maxi; i += 1) {
+          stickerGeometry.faces.push( new THREE.Face3(0, i - 1, i) );
+        }
       }
 
       let box = new THREE.Mesh(stickerGeometry, stickerMaterial);

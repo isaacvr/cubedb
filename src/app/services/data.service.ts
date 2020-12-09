@@ -1,4 +1,4 @@
-import { Subject, Observable } from 'rxjs';
+import { Subject } from 'rxjs';
 import { RawCard } from '../interfaces/interfaces';
 import { Tutorial } from '../interfaces/interfaces';
 import { Injectable, NgZone } from '@angular/core';
@@ -25,9 +25,9 @@ export class DataService {
     this.tutSub = new Subject< Tutorial[] >();
     this.solveSub = new Subject< { type: string, data: Solve[] } >();
     this.sessSub = new Subject< { type: string, data: Session[] } >();
-  
+
     if ( window.require ) {
-      let electron = window.require('electron'); 
+      let electron = window.require('electron');
       this.ipc = electron.ipcRenderer;
       this.window = electron.remote.getCurrentWindow();
       this.isElectron = true;
@@ -35,7 +35,7 @@ export class DataService {
     } else {
       this.isElectron = false;
     }
-    
+
   }
 
   setIpc() {
@@ -45,7 +45,7 @@ export class DataService {
       });
     });
 
-    this.ipc.on('cards', (event, cards) => {     
+    this.ipc.on('cards', (event, cards) => {
       this.ngZone.run(() => {
         this.cardSub.next(cards);
       });

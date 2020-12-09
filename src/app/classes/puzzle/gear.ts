@@ -85,7 +85,13 @@ export function GEAR(): PuzzleInterface {
   let ey = [ 0, 0.32, 0.321, 0.457, 0.37, 0.233, 0.091, 0.088, 0 ];
   
   let edgeSticker = stickerFromPath(ex, ey, CENTER, FRONT, LEFT).reverse();
+  let LU = UP.add( LEFT );
   edgeSticker.vecs = [ UP, LEFT ];
+  
+  for (let i = 0; i < 2; i += 1) {
+    edgeSticker.vecs.push( edgeSticker.vecs[i].rotate(CENTER, LU, PI23) );
+    edgeSticker.vecs.push( edgeSticker.vecs[i].rotate(CENTER, LU, -PI23) );
+  }
 
   let c2 = LEFT.add(UP).sub( LEFT.add(UP).mul(0.65) );
   let edgeStickers = [ edgeSticker ];

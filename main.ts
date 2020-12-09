@@ -12,7 +12,7 @@ let Cards = new NeDB({ filename: __dirname + '/database/cards.db', autoload: tru
 let Tutorials = new NeDB({ filename: __dirname + '/database/tutorials.db', autoload: true });
 let Sessions = new NeDB({ filename: __dirname + '/database/sessions.db', autoload: true });
 let Solves = new NeDB({ filename: __dirname + '/database/solves.db', autoload: true });
-  
+
 /// Algorithms handler
 ipcMain.on('algorithms', (event, arg) => {
 
@@ -41,7 +41,7 @@ ipcMain.on('cards', (event) => {
 
     event.sender.send('cards', algs);
   });
-  
+
 });
 
 /// Tutorials handler
@@ -110,7 +110,7 @@ ipcMain.on('remove-solves', (event, arg) => {
   Solves.remove({ _id: { $in: arg } }, { multi: true }, function(err, solves) {
     return event.sender.send('solves', ['remove-solves', err ? null : arg ]);
   });
-}); 
+});
 
 /// Other Stuff
 ipcMain.on('minimize', () => {
@@ -170,7 +170,7 @@ function createWindow(): BrowserWindow {
         name: "Session 1"
       });
     }
-  }); 
+  });
 
   win.on('closed', () => win = null);
 

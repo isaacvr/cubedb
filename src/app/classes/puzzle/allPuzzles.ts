@@ -14,6 +14,7 @@ import { REDI } from './redi';
 import { MIXUP } from './mixup';
 import { PYRAMORPHIX } from './pyramorphix';
 import { GEAR } from './gear';
+import { DREIDEL } from './dreidel';
 import { registerPuzzle } from './puzzleRegister';
 
 registerPuzzle("rubik", "Rubik's Cube", RUBIK, true);
@@ -32,3 +33,4 @@ registerPuzzle("redi", "Redi", REDI, false);
 registerPuzzle("mixup", "Mixup", MIXUP, false);
 registerPuzzle("pyramorphix", "Pyramorphix", PYRAMORPHIX, false);
 registerPuzzle("gear", "Gear", GEAR, false);
+registerPuzzle("dreidel", "Dreidel", DREIDEL, false);
