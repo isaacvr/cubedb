@@ -53,7 +53,7 @@ function drag(piece: THREE.Intersection, ini: THREE.Vector2, fin: THREE.Vector2,
     return null;
   }
 
-  let animationBuffer: THREE.Geometry[][] = [];
+  let animationBuffer: THREE.Object3D[][] = [];
   let userData: any[][] = [];
   let angs: number[] = [];
   let animationTimes: number[] = [];
@@ -73,18 +73,19 @@ function drag(piece: THREE.Intersection, ini: THREE.Vector2, fin: THREE.Vector2,
 
   groupToMove.forEach(g => {
     let pieces: Piece[] = g.pieces;
-    let subBuffer: THREE.Geometry[] = [];
+    let subBuffer: THREE.Object3D[] = [];
     let subUserData = [];
 
     group.children.forEach(p => {
-      let c: THREE.Mesh[] = <THREE.Mesh[]> p.children;
+      // let c: THREE.Mesh[] = <THREE.Mesh[]> p.children;
 
       if ( findPiece(<Piece> p.userData, pieces) ) {
         subUserData.push( p.userData );
-        for (let i = 0, maxi = c.length; i < maxi; i += 1) {
-          let gm1 = <THREE.Geometry>c[i].geometry;
-          subBuffer.push( gm1 );
-        }
+        subBuffer.push(p);
+        // for (let i = 0, maxi = c.length; i < maxi; i += 1) {
+        //   let gm1 = <THREE.Geometry>c[i].geometry;
+        //   subBuffer.push( gm1 );
+        // }
       }
     });
 
@@ -133,8 +134,8 @@ export class IterativePuzzleComponent implements OnDestroy {
   animating: boolean = false;
   timeIni: number;
   animationTimes: number[] = [];
-  from: THREE.Geometry[][];
-  animBuffer: THREE.Geometry[][];
+  from: THREE.Matrix4[][];
+  animBuffer: THREE.Object3D[][];
   userData: any[][];
   u: Vector3D;
   angs: number[];
@@ -143,9 +144,9 @@ export class IterativePuzzleComponent implements OnDestroy {
     this.animBuffer = [];
 
     this.GUIExpanded = false;
-    this.selectedPuzzle = 'dreidel';
-    this.order = 3;
-    this.hasOrder = false;
+    this.selectedPuzzle = 'mirror';
+    this.order = 2;
+    this.hasOrder = true;
 
     this.puzzles = [];
 
@@ -255,7 +256,7 @@ export class IterativePuzzleComponent implements OnDestroy {
           this.userData = data.userData;
           this.u = data.u;
           this.angs = data.ang.map(a => a * data.dir);
-          this.from = this.animBuffer.map(g => g.map(e => e.clone()));
+          this.from = this.animBuffer.map(g => g.map(e => e.matrixWorld.clone()));
           this.animationTimes = data.animationTime.map(e => e || ANIMATION_TIME);
           this.animating = true;
           this.timeIni = performance.now();
@@ -287,32 +288,29 @@ export class IterativePuzzleComponent implements OnDestroy {
       controls.handleResize();
     });
 
-    let interpolate = (data: THREE.Geometry[], from: THREE.Geometry[], ang: number, userData: Piece[]) => {
-      let allStickers = userData.reduce((ac, p) => {
-        let p1 = p.clone(true);
-
-        if ( p1.hasCallback ) {
-          p1.callback(p1, this.cube.p.center, this.u, ang);
+    let interpolate = (data: THREE.Object3D[], from: THREE.Matrix4[], ang: number, userData: Piece[]) => {
+      let u = new THREE.Vector3(this.u.x, this.u.y, this.u.z).normalize();
+      let center = this.cube.p.center;
+      let c = new THREE.Vector3(center.x, center.y, center.z);
+      
+      userData.forEach((p, idx) => {
+        let d = data[idx];
+        d.rotation.setFromRotationMatrix( from[idx] );
+        d.position.setFromMatrixPosition( from[idx] );
+        if ( p.hasCallback ) {
+          p.callback(d, new THREE.Vector3(0, 0, 0), u, ang, true);
         } else {
-          p1.rotate(this.cube.p.center, this.u, ang, true);
+          d.parent.localToWorld(d.position);
+          d.position.sub(c);
+          d.position.applyAxisAngle(u, ang);
+          d.position.add(c);
+          d.parent.worldToLocal(d.position);
+          d.rotateOnWorldAxis(u, ang);
         }
-
-        ac.push( ...p1.stickers );
-        return ac;
-      }, []);
-
-      for (let i = 0, maxi = data.length; i < maxi; i += 1) {
-        data[i].vertices.forEach((v, p) => {
-          let vec = allStickers[i].points[p];
-          v.set(vec.x, vec.y, vec.z);
-        });
-        data[i].verticesNeedUpdate = true;
-        data[i].computeBoundingBox();
-        data[i].computeBoundingSphere();
-      }
+      });
     };
 
-    let animate = () => {
+    let render = () => {
 
       if ( this.animating ) {
         let total = this.animBuffer.length;
@@ -351,10 +349,10 @@ export class IterativePuzzleComponent implements OnDestroy {
 
       controls.update();
       renderer.render(scene, camera);
-      requestAnimationFrame( animate );
+      requestAnimationFrame( render );
     }
 
-    animate();
+    render();
 
   }
 

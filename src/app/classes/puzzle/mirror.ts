@@ -159,7 +159,13 @@ export function MIRROR(n: number): PuzzleInterface {
   };
 
   mirror.toMove = function(piece: Piece, sticker: Sticker, dir: Vector3D) {
-    let st = piece.stickers.find(s => s.color === 'x' && s.normal().cross(dir).abs() < 1e-6)._generator;
+    let st = piece.stickers.find(s => s.color === 'x' && s.normal().cross(dir).abs() < 1e-6);
+
+    if ( !st ) {
+      return { pieces: [], ang: PI_2 };
+    }
+
+    st = st._generator;
     // console.log("STICKER: ", st, st.normal());
     let ac = st.updateMassCenter().add( st.normal().mul(-0.01) );
     let toMovePieces = pieces.filter(p => p.direction1(ac, dir) === 0);

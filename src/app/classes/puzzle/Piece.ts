@@ -9,8 +9,8 @@ export class Piece {
   hasCallback: boolean;
   callback: Function;
   anchor: Vector3D;
+  _cached_mass_center: Vector3D;
 
-  private _cached_mass_center: Vector3D;
   constructor(stickers?: Sticker[]) {
     // if ( stickers && stickers.length > 0 ) {
     //   console.log("Piece constructor: ", stickers[0] instanceof FaceSticker);
@@ -122,13 +122,13 @@ export class Piece {
       this.stickers.map(s => s.rotate(ref, dir, ang, true));
       this._cached_mass_center.rotate(ref, dir, ang, true);
       this.computeBoundingBox();
-      this.anchor && this.anchor.rotate(ref, dir, ang, true);
+      this.anchor && this.anchor.rotate(ref, dir, ang, true).toNormal();
       return this;
     }
     let p = new Piece();
     p.stickers = this.stickers.map(s => s.rotate(ref, dir, ang));
     p._cached_mass_center = this._cached_mass_center.rotate(ref, dir, ang);
-    this.anchor && (p.anchor = this._cached_mass_center.rotate(ref, dir, ang));
+    this.anchor && (p.anchor = this.anchor.rotate(ref, dir, ang).toNormal());
     p.computeBoundingBox();
     return p;
   }

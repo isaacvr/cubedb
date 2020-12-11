@@ -162,6 +162,14 @@ export class Vector3D {
     return `<${this.x}; ${this.y}; ${this.z}>`;
   }
 
+  toNormal(): Vector3D {
+    let coords = [ this.x, this.y, this.z ].map(e => Math.abs(e) < 1e-6 ? 0 : Math.sign(e) );
+    this.x = coords[0];
+    this.y = coords[1];
+    this.z = coords[2];
+    return this;
+  }
+
 }
 
 export const CENTER = new Vector3D(0, 0, 0);

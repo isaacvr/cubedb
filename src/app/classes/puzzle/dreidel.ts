@@ -225,8 +225,7 @@ export function DREIDEL(): PuzzleInterface {
   dreidel.toMove = function(piece: Piece, sticker: Sticker, dir: Vector3D) {
     let normalTurn = [ LEFT, UP, BACK ].reduce((ac, v) => ac || v.cross(dir).abs() < 1e-6, false);
     let cornerTurn = CORNERS.reduce((ac, v) => ac || v.cross(dir).abs() < 1e-6, false);
-    let type = sticker.vecs.length;
-
+    
     if ( !normalTurn && !cornerTurn ) {
       return {
         pieces: [],
