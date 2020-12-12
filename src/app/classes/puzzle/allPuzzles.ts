@@ -15,6 +15,7 @@ import { MIXUP } from './mixup';
 import { PYRAMORPHIX } from './pyramorphix';
 import { GEAR } from './gear';
 import { DREIDEL } from './dreidel';
+import { BDG } from './bandaged222';
 import { registerPuzzle } from './puzzleRegister';
 
 registerPuzzle("rubik", "Rubik's Cube", RUBIK, true);
@@ -34,3 +35,4 @@ registerPuzzle("mixup", "Mixup", MIXUP, false);
 registerPuzzle("pyramorphix", "Pyramorphix", PYRAMORPHIX, false);
 registerPuzzle("gear", "Gear", GEAR, false);
 registerPuzzle("dreidel", "Dreidel", DREIDEL, false);
+registerPuzzle("bandaged222", "Bandaged 2x2x2", BDG, false);
