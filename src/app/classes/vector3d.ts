@@ -26,8 +26,8 @@ export class Vector3D {
     return Vector3D.direction1(a, Vector3D.cross(a, b, c), d);
   }
 
-  static direction1(a: Vector3D, u: Vector3D, pt: Vector3D): -1 | 0 | 1 {
-    let dot = u.dot( pt.sub(a) );
+  static direction1(anchor: Vector3D, u: Vector3D, pt: Vector3D): -1 | 0 | 1 {
+    let dot = u.dot( pt.sub(anchor) );
     if ( Math.abs(dot) < 1e-6 ) {
       return 0;
     }

@@ -144,7 +144,7 @@ export class IterativePuzzleComponent implements OnDestroy {
     this.animBuffer = [];
 
     this.GUIExpanded = false;
-    this.selectedPuzzle = 'bandaged222';
+    this.selectedPuzzle = 'bicube';
     this.order = 2;
     this.hasOrder = true;
 

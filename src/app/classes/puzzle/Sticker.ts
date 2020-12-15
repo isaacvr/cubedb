@@ -145,15 +145,20 @@ export class Sticker {
     return s;
   }
 
-  direction1(a: Vector3D, u: Vector3D, useMc?: boolean): -1 | 0 | 1 {
+  direction1(anchor: Vector3D, u: Vector3D, useMc?: boolean): -1 | 0 | 1 {
     let dirs = [0, 0, 0];
     let pts = (useMc) ? [this.getMassCenter()] : this.points;
+    let len = pts.length;
 
-    for (let i = 0, maxi = pts.length; i < maxi; i += 1) {
-      dirs[ Vector3D.direction1(a, u, pts[i]) + 1 ] += 1;
+    for (let i = 0; i < len; i += 1) {
+      dirs[ Vector3D.direction1(anchor, u, pts[i]) + 1 ] += 1;
+      
+      if ( dirs[0] > 0 && dirs[2] > 0 ) {
+        return 0;
+      }
     }
     
-    if ( (dirs[0] > 0 && dirs[2] > 0) || (dirs[1] === pts.length) ) {
+    if ( dirs[1] === len ) {
       return 0;
     } else if ( dirs[0] > 0 ) {
       return -1;

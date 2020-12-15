@@ -146,14 +146,6 @@ export class Piece {
       }
     }
 
-    // if ( dirs[1] || ( dirs[0] > 0 && dirs[2] > 0 ) ) {
-    //   return 0;
-    // } else if ( dirs[0] ) {
-    //   return -1;
-    // }
-
-    // return 1;
-    // // console.log("DIRS: ", dirs);
     if ( (dirs[0] > 0 && dirs[2] > 0) || dirs[1] === len ) {
       return 0;
     } else if ( dirs[0] > 0 ) {
@@ -171,24 +163,17 @@ export class Piece {
     for (let i = 0; i < len; i += 1) {
       dirs[ st[i].direction1(anchor, u, useMassCenter) + 1 ] += 1;
       
-      if ( dirs[1] || ( dirs[0] > 0 && dirs[2] > 0 ) ) {
+      if ( (dirs[0] > 0 && dirs[2] > 0) || dirs[1] > 0 ) {
         return 0;
       }
-    }
-    // console.log("DIRS1: ", dirs);
+    }    
 
     if ( dirs[0] ) {
       return -1;
     }
 
     return 1;
-    // if ( (dirs[0] > 0 && dirs[2] > 0) || dirs[1] === len ) {
-    //   return 0;
-    // } else if ( dirs[0] > 0 ) {
-    //   return -1;
-    // }
 
-    // return 1;
   }
 
   reflect(p1: Vector3D, p2: Vector3D, p3: Vector3D, preserveOrientation?: boolean): Piece {
