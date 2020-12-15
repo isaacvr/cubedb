@@ -17,6 +17,7 @@ import { GEAR } from './gear';
 import { DREIDEL } from './dreidel';
 import { BDG } from './bandaged222';
 import { BICUBE } from './bicube';
+import { SQUARE2 } from './square2';
 import { registerPuzzle } from './puzzleRegister';
 
 registerPuzzle("rubik", "Rubik's Cube", RUBIK, true);
@@ -25,6 +26,7 @@ registerPuzzle("pyraminx", "Pyraminx", PYRAMINX, true);
 registerPuzzle("megaminx", "Megaminx", MEGAMINX, true);
 registerPuzzle("skewb", "Skewb", SKEWB, false);
 registerPuzzle("square1", "Square One", SQUARE1, false);
+registerPuzzle("square2", "Square Two", SQUARE2, false);
 registerPuzzle("axis", "Axis", AXIS, false);
 registerPuzzle("fisher", "Fisher", FISHER, false);
 registerPuzzle("ivy", "Ivy", IVY, false);
