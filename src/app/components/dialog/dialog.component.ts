@@ -1,10 +1,32 @@
 import { DataService } from 'app/services/data.service';
 import { generateCubeBundle } from 'app/cube-drawer';
 import { Puzzle } from './../../classes/puzzle/puzzle';
-import { Solve, Penalty, Session } from './../../interfaces/interfaces';
+import { Solve, Penalty, Session, BlockType, RawPuzzle, CubeType } from './../../interfaces/interfaces';
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { options } from 'app/cstimer/scramble/scramble';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { CubeMode, CubeModeMap } from 'app/constants/constants';
+import { puzzleReg } from 'app/classes/puzzle/puzzleRegister';
+
+interface Setting {
+  hasInspection: boolean;
+  inspection: number;
+  showElapsedTime: boolean;
+  calcAoX: number;
+}
+
+interface Tutorial {
+  title: string;
+  titleLower: string;
+  puzzle: string;
+  algs: number;
+}
+
+interface Block {
+  tab: number;
+  content: BlockType;
+}
 
 @Component({
   selector: 'app-dialog',
@@ -19,6 +41,12 @@ export class DialogComponent implements OnInit {
   preview: string;
   creatingSession: boolean;
   newSessionName: string;
+  settings: Setting;
+  tutorial: Tutorial;
+  block: Block;
+  modes;
+  puzzles: any[];
+  cubes: Puzzle[];
   constructor(
     public dialogRef: MatDialogRef<DialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data,
@@ -27,6 +55,37 @@ export class DialogComponent implements OnInit {
     this.type = this.data.type;
     this.preview = "";
     this.creatingSession = false;
+    this.settings = {
+      hasInspection: true,
+      inspection: 0,
+      showElapsedTime: true,
+      calcAoX: 0
+    };
+    this.tutorial = {
+      title: '',
+      titleLower: '',
+      puzzle: '',
+      algs: 0
+    };
+    this.block = {
+      tab: 0,
+      content: {
+        type: 'title',
+        content: "",
+        cubes: []
+      }
+    };
+    this.modes = CubeModeMap;
+    this.puzzles = [];
+    this.cubes = [];
+
+    for (let [key, value] of puzzleReg ) {
+      this.puzzles.push({
+        name: value.name,
+        value: key,
+        order: value.order
+      });
+    }
 
     document.documentElement.style.setProperty('--panel-height', '');
     document.documentElement.style.setProperty('--panel-padding', '24px');
@@ -65,6 +124,14 @@ export class DialogComponent implements OnInit {
         document.documentElement.style.setProperty('--panel-height', '80%');
         this.rawData = this.data.data;
         break;
+      }
+      case 'settings': {
+        this.settings = {
+          hasInspection: this.data.data.hasInspection,
+          inspection: this.data.data.inspection / 1000,
+          showElapsedTime: this.data.data.showElapsedTime,
+          calcAoX: this.data.data.calcAoX,
+        };
       }
     }
   }
@@ -131,5 +198,57 @@ export class DialogComponent implements OnInit {
       this.rawData.time -= 2000;
     }
     this.rawData.penalty = p;
+  }
+
+  selectGroup(e: MatSlideToggleChange) {
+    this.settings.calcAoX = ~~e.checked;
+  }
+
+  refreshCube(i: number) {
+    const PI_180 = Math.PI / 180;
+    let ci = (<RawPuzzle>this.block.content.cubes[i]);
+
+    if ( typeof ci.tips === 'string' ) {
+      ci.tips = (<string> ci.tips).split(',').map(Number);
+    }
+
+    let c = this.cubes[i] = Puzzle.fromSequence(ci.scramble, ci);
+    
+    c.rotation = { x: ci.rotation.x * PI_180, y: ci.rotation.y * PI_180, z: ci.rotation.z * PI_180 };
+
+    let s = generateCubeBundle([c], 150, false, true).subscribe({
+      complete: () => { s.unsubscribe(); }
+    });
+  }
+
+  deleteCube(i: number) {
+    this.block.content.cubes.splice(i, 1);
+    this.cubes.splice(i, 1);
+  }
+
+  addCube(type: string) {
+    if ( type === 'cube' ) {
+      let cnt: RawPuzzle = {
+        type: 'rubik',
+        mode: CubeMode.NORMAL,
+        order: [3],
+        tips: [],
+        view: 'trans',
+        scramble: '',
+        rotation: { x: 0, y: 0, z: 0 },
+        raw: false
+      };
+
+      (<CubeType[]>this.block.content.cubes).push(cnt);
+      this.cubes.push(null);
+      this.refreshCube(this.cubes.length - 1);
+
+    } else if ( type === 'arrow' ) {
+      (<CubeType[]>this.block.content.cubes).push({
+        type: 'arrow',
+        text: ''
+      });
+      this.cubes.push(null);
+    }
   }
 }

@@ -96,3 +96,153 @@
     </table>
   </div>
 </div>
+<div *ngIf="type == 'settings'">
+  <section>
+    <mat-checkbox [(ngModel)]="settings.hasInspection">Inspection</mat-checkbox>
+    <mat-slider
+      [(ngModel)]="settings.inspection"
+      [disabled]="!settings.hasInspection"
+      min="5" max="60" step="5"
+      thumbLabel></mat-slider>
+  </section>
+  <section>
+    <mat-checkbox [(ngModel)]="settings.showElapsedTime">Show time when running</mat-checkbox>
+  </section>
+  <section>
+    AoX calculation:
+    <mat-slide-toggle (change)="selectGroup($event)" [ngModel]="settings.calcAoX"></mat-slide-toggle>
+    <span>{{ ['Sequential', 'Group of X'][ settings.calcAoX ] }}</span>
+  </section>
+  <section>
+    <button mat-button (click)="close()">Cancel</button>
+    <button mat-button (click)="close(settings)">Save</button>
+  </section>
+</div>
+<div *ngIf="type == 'delete-all'">
+  <h4>Do you want to delete all the solves?</h4>
+  <section>
+    <button mat-button (click)="close()">Cancel</button>
+    <button mat-button (click)="close(true)">Save</button>
+  </section>
+</div>
+<div *ngIf="type == 'add-tutorial'">
+  <mat-form-field>
+    <input matInput [(ngModel)]="tutorial.title" type="text" placeholder="Title">
+  </mat-form-field>
+  <mat-form-field>
+    <input matInput [(ngModel)]="tutorial.titleLower" type="text" placeholder="Title lower">
+  </mat-form-field>
+  <mat-form-field>
+    <input matInput [(ngModel)]="tutorial.puzzle" type="text" placeholder="Puzzle">
+  </mat-form-field>
+  <mat-form-field>
+    <input matInput [(ngModel)]="tutorial.algs" type="number" min="0" step="1" placeholder="Algorithms">
+  </mat-form-field>
+  <section>
+    <button mat-button (click)="close()">Cancel</button>
+    <button mat-button (click)="close(tutorial)">Save</button>
+  </section>
+</div>
+<div *ngIf="type == 'add-block'">
+  <mat-tab-group [(selectedIndex)]="block.tab">
+    <mat-tab label="Title">
+      <mat-form-field>
+        <input matInput type="text" [(ngModel)]="block.content.content" placeholder="Title...">
+      </mat-form-field>
+    </mat-tab>
+    <mat-tab label="Subtitle">
+      <mat-form-field>
+        <input matInput type="text" [(ngModel)]="block.content.content" placeholder="Subtitle...">
+      </mat-form-field>
+    </mat-tab>
+    <mat-tab label="Text">
+      <mat-form-field>
+        <textarea matInput cdkTextareaAutosize [(ngModel)]="block.content.content" placeholder="Text...">
+        </textarea>
+      </mat-form-field>
+    </mat-tab>
+    <mat-tab label="Cubes">
+      <section style="margin-top: 10px;">
+        <button (click)="addCube('cube')" mat-stroked-button>Add cube</button>
+        <button (click)="addCube('arrow')" mat-stroked-button>Add arrow</button>
+      </section>
+      <section>
+        <ng-container *ngFor="let cube of block.content.cubes; index as i">
+          <mat-expansion-panel *ngIf="cube.type == 'arrow'">
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{cube.text}}</mat-panel-title>
+            </mat-expansion-panel-header>
+            <mat-form-field>
+              <input matInput type="text" [(ngModel)]="cube.text" placeholder="Arrow tooltip...">
+              <mat-icon matSuffix
+                [matTooltip]="cube.text" matTooltipHideDelay="100" svgIcon="arrow-right-thick"></mat-icon>
+            </mat-form-field>
+            <button mat-stroked-button (click)="deleteCube(i)"> Delete Arrow </button>
+          </mat-expansion-panel>
+          <mat-expansion-panel
+            (opened)="cube.raw = true" (closed)="cube.raw = false" *ngIf="cube.type != 'arrow'">
+            <mat-expansion-panel-header>
+              <mat-panel-title *ngIf="!cube.raw">
+                <img [attr.src]="cubes[i].img" alt="">
+                <span>{{cube.scramble}}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <mat-form-field>
+              <mat-select [(value)]="cube.type">
+                <mat-option *ngFor="let p of puzzles" [value]="p.value">{{p.name}}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-select [(value)]="cube.mode" [disabled]="cube.type != 'rubik'">
+                <mat-option *ngFor="let mode of modes" [value]="mode[1]">{{mode[0]}}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-select [(value)]="cube.view">
+                <mat-option value="trans">3D</mat-option>
+                <mat-option value="2d">2D</mat-option>
+                <mat-option value="plan">Top view</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field *ngIf="cube.view == 'plan'">
+              <input matInput type="text" [(ngModel)]="cube.tips" placeholder="tips...">
+            </mat-form-field>
+            <section>
+              Order ({{cube.order[0]}} x {{cube.order[1]}} x {{cube.order[2]}}):
+              <mat-slider
+              [(ngModel)]="cube.order[0]" min="1" max="10" step="1" thumbLabel
+              ></mat-slider>
+              <mat-slider *ngIf="cube.type == 'rubik'"
+              [(ngModel)]="cube.order[1]" min="1" max="10" step="1" thumbLabel
+              ></mat-slider>
+              <mat-slider *ngIf="cube.type == 'rubik'"
+              [(ngModel)]="cube.order[2]" min="1" max="10" step="1" thumbLabel
+              ></mat-slider>
+            </section>
+            <mat-form-field>
+              <input matInput type="text" [(ngModel)]="cube.scramble" placeholder="Scramble...">
+            </mat-form-field>
+            <section>
+              Rotation:
+              X: <mat-slider [(ngModel)]="cube.rotation.x"
+                min="-180" max="180" step="5" thumbLabel></mat-slider>
+              Y: <mat-slider [(ngModel)]="cube.rotation.y"
+                min="-180" max="180" step="5" thumbLabel></mat-slider>
+              Z: <mat-slider [(ngModel)]="cube.rotation.z"
+                min="-180" max="180" step="5" thumbLabel></mat-slider>
+            </section>
+            <img [attr.src]="cubes[i].img" alt="">
+            <section>
+              <button mat-stroked-button (click)="refreshCube(i)"> Refresh view </button>
+              <button mat-stroked-button (click)="deleteCube(i)"> Delete Cube </button>
+            </section>
+          </mat-expansion-panel>
+        </ng-container>
+      </section>
+    </mat-tab>
+  </mat-tab-group>
+  <section>
+    <button mat-button (click)="close()">Cancel</button>
+    <button mat-button (click)="close(block)">Add</button>
+  </section>
+</div>

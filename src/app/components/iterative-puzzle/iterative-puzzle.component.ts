@@ -1,5 +1,5 @@
 import { Piece } from './../../classes/puzzle/Piece';
-import { Vector3D, CENTER } from './../../classes/vector3d';
+import { Vector3D } from './../../classes/vector3d';
 import { cubeToThree } from 'app/cube-drawer';
 import { CubeMode } from './../../constants/constants';
 import { Puzzle } from './../../classes/puzzle/puzzle';
@@ -8,10 +8,8 @@ import { Component, OnDestroy } from '@angular/core';
 import * as THREE from 'three';
 import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
 import { puzzleReg } from 'app/classes/puzzle/puzzleRegister';
-
-function tToV(v1: THREE.Vector3): Vector3D {
-  return new Vector3D(v1.x, v1.y, v1.z);
-}
+import { DefaultUrlSerializer, NavigationEnd, Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 function mouseIntersection(mx: number, my: number, arr: any[], camera: THREE.PerspectiveCamera): THREE.Intersection[] {
   let mouse = new THREE.Vector2(mx, my);
@@ -114,6 +112,7 @@ const ANIMATION_TIME = 300; /// Default animation time: 300ms
 })
 export class IterativePuzzleComponent implements OnDestroy {
   cube: Puzzle;
+  scramble: string;
   sensitivity: number = 3e-3;
   dragging: boolean = false;
   rx: number = 0;
@@ -121,6 +120,7 @@ export class IterativePuzzleComponent implements OnDestroy {
   renderer: THREE.WebGLRenderer;
   scene: THREE.Scene;
   group: THREE.Object3D;
+  sub: Subscription;
 
   /// GUI
   puzzles: any[];
@@ -138,14 +138,15 @@ export class IterativePuzzleComponent implements OnDestroy {
   userData: any[][];
   u: Vector3D;
   angs: number[];
-  constructor() {
+  constructor(private router: Router) {
     this.from = [];
     this.animBuffer = [];
 
     this.GUIExpanded = false;
-    this.selectedPuzzle = 'gear';
-    this.order = 2;
-    this.hasOrder = false;
+    this.selectedPuzzle = 'mirror';
+    this.order = 3;
+    this.hasOrder = true;
+    this.scramble = "";
 
     this.puzzles = [];
 
@@ -354,11 +355,37 @@ export class IterativePuzzleComponent implements OnDestroy {
 
     animate();
 
+    this.sub = this.router.events.subscribe({
+      next: (event) => {
+        if ( event instanceof NavigationEnd ) {
+          console.log("URL: ", event.urlAfterRedirects);
+          let url = event.urlAfterRedirects
+            .replace(/%40/gi, '@')
+            .replace(/%3A/gi, ':')
+            .replace(/%24/gi, '$')
+            .replace(/%2C/gi, ',')
+            .replace(/%3B/gi, ';')
+            .replace(/%20/gi, '+')
+            .replace(/%3D/gi, '=')
+            .replace(/%3F/gi, '?')
+            .replace(/%2F/gi, '/');
+          let obj = (new DefaultUrlSerializer()).parse( url ).queryParams;
+          let puzzle = this.puzzles.find(p => p.value === obj.puzzle);
+          this.selectedPuzzle = (puzzle) ? puzzle.value : 'rubik';
+          this.order = (obj.order) ? +obj.order : 3;
+          this.scramble = (obj.scramble) ? obj.scramble : '';
+
+          this.resetPuzzle();
+        }
+      },
+    });
+
   }
 
   ngOnDestroy() {
     this.renderer.domElement.remove();
     this.renderer.dispose();
+    this.sub.unsubscribe();
   }
 
   /// GUI
@@ -366,16 +393,20 @@ export class IterativePuzzleComponent implements OnDestroy {
     this.hasOrder = this.puzzles.find(p => p.value === this.selectedPuzzle).order;
   }
 
-  resetPuzzle() {
+  resetPuzzle(scramble?: boolean) {
     let children = this.scene.children;
     this.scene.remove( ...children );
-    
-    this.cube = new Puzzle({
+
+    this.cube = Puzzle.fromSequence(this.scramble, {
       type: this.selectedPuzzle,
       view: 'trans',
       order: [ this.order, this.order, this.order ],
-      mode: CubeMode.NORMAL
+      mode: CubeMode.NORMAL,
     });
+
+    if ( scramble && this.cube.p.scramble ) {
+      this.cube.p.scramble();
+    }
 
     this.group = cubeToThree(this.cube);
 

@@ -60,12 +60,14 @@ export interface PuzzleInterface {
   center: Vector3D;
   faceVectors: Vector3D[];
   faceColors: string[];
-  dims?: number[];
   getAllStickers: () => Sticker[];
   move: (any) => any;
+
+  dims?: number[];
+  raw?: any;
+  scramble?: () => any;
   toMove?: (...args) => any;
   vectorsFromCamera?: (...args) => any;
-  raw?: any;
 }
 
 export interface PuzzleOptions {
@@ -74,14 +76,6 @@ export interface PuzzleOptions {
   mode?: CubeMode;
   view?: CubeView;
   tips?: number[];
-}
-
-export interface Tutorial {
-  _id: string;
-  title: string;
-  titleLower: string;
-  puzzle: string;
-  content: any;
 }
 
 export enum Penalty {
@@ -117,4 +111,32 @@ export interface TimerPuzzle {
   title: string;
   categoriesStr: string[];
   categories: TimerPuzzleCategory;
+}
+
+export interface RawPuzzle {
+  type: PuzzleType;
+  mode: CubeMode;
+  scramble: string;
+  tips: number[];
+  rotation: any;
+  order: number[];
+  view: CubeView;
+  raw?: any; // Intended for user specific purposes
+}
+
+export declare type CubeType = Puzzle | RawPuzzle | { type: 'arrow', text: string } | { tp: 'arrow', tx: string };
+
+export interface BlockType {
+  type: "title" | "text" | "cubes";
+  content ?: string;
+  cubes?: CubeType[];
+}
+
+export interface Tutorial {
+  _id: string;
+  title: string;
+  titleLower: string;
+  puzzle: string;
+  algs: number;
+  content: BlockType[];
 }

@@ -9,11 +9,11 @@ import { transform } from 'app/pipes/timer.pipe';
 import { MENU } from './menu';
 import * as all from '../../cstimer/scramble';
 import { solve_cross, solve_xcross } from 'app/cstimer/tools/cross';
-import { MatMenuTrigger } from '@angular/material/menu';
 import { DataService } from 'app/services/data.service';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogComponent } from '../dialog/dialog.component';
+import { MatRipple } from '@angular/material/core';
 
 enum TimerState {
   CLEAN = 0, STOPPED = 1, PREVENTION = 2, INSPECTION = 3, RUNNING = 4
@@ -36,7 +36,9 @@ interface Statistics {
   best: Metric;
   worst: Metric;
   avg: Metric;
+  dev: Metric;
   count: Metric;
+  Mo3: Metric;
   Ao5: Metric;
   Ao12: Metric;
   Ao50: Metric;
@@ -48,18 +50,27 @@ interface Statistics {
   __counter: number;
 }
 
+enum AverageSetting {
+  SEQUENTIAL = 0,
+  GROUP = 1
+}
+
+let LAST_CLICK = 0;
+
 @Component({
   selector: 'app-timer',
   templateUrl: './timer.component.html',
   styleUrls: ['./timer.component.scss'],
 })
 export class TimerComponent implements OnInit, OnDestroy {
-  @ViewChild(MatMenuTrigger) pillMenu: MatMenuTrigger;
+  @ViewChild(MatRipple) ripple: MatRipple;
 
   state: TimerState;
   decimals: boolean;
   time: number;
+  hasInspection: boolean;
   inspectionTime: number;
+  showTime: boolean;
   scramble: string;
   cross: string[];
   xcross: string;
@@ -68,6 +79,7 @@ export class TimerComponent implements OnInit, OnDestroy {
   AoX: number;
   preview: string;
   Ao5: number[];
+  calcAoX: AverageSetting;
 
   group: number;
   groups: string[];
@@ -167,6 +179,8 @@ export class TimerComponent implements OnInit, OnDestroy {
     private themeService: ThemeService,
     public dialog: MatDialog) {
     this.inspectionTime = 15000;
+    this.hasInspection = true;
+    this.showTime = true;
     this.time = 0;
     this.ref = 0;
     this.refPrevention = 0;
@@ -177,6 +191,7 @@ export class TimerComponent implements OnInit, OnDestroy {
     this.AoX = 100;
     this.enableKeyboard = true;
     this.preview = '';
+    this.calcAoX = AverageSetting.GROUP;
 
     this.Ao5 = null;
 
@@ -202,6 +217,8 @@ export class TimerComponent implements OnInit, OnDestroy {
       worst: { value: 0, better: false },
       count: { value: 0, better: false },
       avg: { value: 0, better: false },
+      dev: { value: 0, better: false },
+      Mo3: { value: -1, better: false },
       Ao5: { value: -1, better: false },
       Ao12: { value: -1, better: false },
       Ao50: { value: -1, better: false },
@@ -286,6 +303,7 @@ export class TimerComponent implements OnInit, OnDestroy {
             } else {
               this.session = this.sessions[0];
             }
+            this.selectedSession();
             localStorage.setItem('session', this.session._id);
             break;
           }
@@ -297,9 +315,7 @@ export class TimerComponent implements OnInit, OnDestroy {
           }
           case 'add-session': {
             this.sessions.push(<Session> data.data);
-            if ( this.sessions.length === 1 ) {
-              this.session = <Session> data.data;
-            }
+            this.session = <Session> data.data;
             break;
           }
         }
@@ -331,16 +347,16 @@ export class TimerComponent implements OnInit, OnDestroy {
 
   changeAoX(event: { target: HTMLInputElement }) {
     this.AoX = Math.min(Math.max(10, ~~event.target.value), 10000);
-    this.lineChartData[4].data = TimerComponent.getAverage(this.AoX, this.solves)
+    this.lineChartData[4].data = TimerComponent.getAverage(this.AoX, this.solves, this.calcAoX);
     this.lineChartData[4].label = 'Ao' + this.AoX;
   }
 
-  static getAverage(n: number, arr: Solve[]): number[] {
+  static getAverage(n: number, arr: Solve[], calc: AverageSetting): number[] {
     let res = [];
     let len = arr.length - 1;
     let elems = [];
-    let disc = Math.ceil(n * 0.05);
-
+    let disc = (n === 3) ? 0 : Math.ceil(n * 0.05);
+ 
     for (let i = 0, maxi = len; i <= maxi; i += 1) {
       if ( arr[len - i].penalty === Penalty.DNF ) {
         res.push(null);
@@ -355,13 +371,11 @@ export class TimerComponent implements OnInit, OnDestroy {
         let sumd = e1.reduce((s, e, p) => {
           return (p >= disc && p < n - disc) ? s + e : s;
         }, 0);
-       
-        if ( n == 5 ) {
-          console.log("ELEMS_SUMD_CANT", e1, sumd, n - disc * 2);
-        }
-
+        
         res.push( sumd / (n - disc * 2) );
-        elems.shift();
+
+        calc === AverageSetting.GROUP && (elems.length = 0);
+        calc === AverageSetting.SEQUENTIAL && elems.shift();
       }
     }
 
@@ -389,18 +403,29 @@ export class TimerComponent implements OnInit, OnDestroy {
   }
 
   updateStatistics(inc ?: boolean) {
-    let AON = [ 5, 12, 50, 100, 200, 500, 1000, 2000 ];
-    let AVG = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
-    let BEST = [ Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity ];
+    let AON = [ 3, 5, 12, 50, 100, 200, 500, 1000, 2000 ];
+    let AVG = [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+    let BEST = [ Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity, Infinity ];
     let len = this.solves.length;
     let sum = 0;
+    let avg = 0;
+    let dev = 0;
     let bw = this.solves.reduce((ac: number[], e) => {
-      sum += e.time;
+      if ( e.penalty === Penalty.DNF ) {
+        len -= 1;
+      } else {
+        sum += e.time;
+      }
       return ( e.penalty === Penalty.DNF ) ? ac : [ Math.min(ac[0], e.time), Math.max(ac[1], e.time) ];
     }, [Infinity, 0]);
 
+    avg = (len > 0) ? sum / len : null;
+    dev = (len > 0) ? Math.sqrt( this.solves.reduce((acc, e) => {
+      return e.penalty === Penalty.DNF ? acc : (acc + (e.time - avg)**2 / len);
+    }, 0) ) : null;
+    
     for (let i = 0, maxi = AON.length; i < maxi; i += 1) {
-      let avgs = TimerComponent.getAverage(AON[i], this.solves);
+      let avgs = TimerComponent.getAverage(AON[i], this.solves, this.calcAoX);
       BEST[i] = avgs.reduce((b, e) => (e) ? Math.min(b, e) : b, BEST[i]);
       let lastAvg = avgs.pop();
       AVG[i] = ( lastAvg ) ? lastAvg : -1;
@@ -411,18 +436,28 @@ export class TimerComponent implements OnInit, OnDestroy {
     this.stats = {
       best:  { value: bw[0], better: ps.best.value > bw[0] },
       worst: { value: bw[1], better: false },
-      avg:   { value: len === 0 ? null : sum / len, better: false },
-      count: { value: len, better: false },
-      Ao5:   { value: AVG[0], better: AVG[0] <= BEST[0] },
-      Ao12:  { value: AVG[1], better: AVG[1] <= BEST[1] },
-      Ao50:  { value: AVG[2], better: AVG[2] <= BEST[2] },
-      Ao100: { value: AVG[3], better: AVG[3] <= BEST[3] },
-      Ao200: { value: AVG[4], better: AVG[4] <= BEST[4] },
-      Ao500: { value: AVG[5], better: AVG[5] <= BEST[5] },
-      Ao1k:  { value: AVG[6], better: AVG[6] <= BEST[6] },
-      Ao2k:  { value: AVG[7], better: AVG[7] <= BEST[7] },
+      avg:   { value: avg, better: false },
+      dev:   { value: dev, better: false },
+      count: { value: this.solves.length, better: false },
+      Mo3:   { value: AVG[0], better: AVG[0] <= BEST[0] },
+      Ao5:   { value: AVG[1], better: AVG[1] <= BEST[1] },
+      Ao12:  { value: AVG[2], better: AVG[2] <= BEST[2] },
+      Ao50:  { value: AVG[3], better: AVG[3] <= BEST[3] },
+      Ao100: { value: AVG[4], better: AVG[4] <= BEST[4] },
+      Ao200: { value: AVG[5], better: AVG[5] <= BEST[5] },
+      Ao500: { value: AVG[6], better: AVG[6] <= BEST[6] },
+      Ao1k:  { value: AVG[7], better: AVG[7] <= BEST[7] },
+      Ao2k:  { value: AVG[8], better: AVG[8] <= BEST[8] },
       __counter: (inc) ? ps.__counter + 1 : ps.__counter,
     };
+
+    if ( this.stats.best.better && ps.best.value != Infinity ) {
+      this.ripple.launch({
+        centered: true,
+        color: '#00ff0099'
+      });
+    }
+
   }
 
   updateChart() {
@@ -442,7 +477,7 @@ export class TimerComponent implements OnInit, OnDestroy {
     
     avgs.forEach(e => {
       this.lineChartData.push({
-        data: TimerComponent.getAverage(e, this.solves),
+        data: TimerComponent.getAverage(e, this.solves, this.calcAoX),
         type: 'line',
         fill: false,
         label: 'Ao' + e,
@@ -477,6 +512,9 @@ export class TimerComponent implements OnInit, OnDestroy {
     this.sortSolves();
     this.updateChart();
     this.updateStatistics(true);
+    if ( this.solves.length > 0 ) {
+      this.setConfigFromSolve(this.solves[0]);
+    }
   }
 
   initScrambler(scr?: string, mode ?: string) {
@@ -641,14 +679,18 @@ export class TimerComponent implements OnInit, OnDestroy {
       return;
     }
     if ( this.selected || force ) {
-      this.pillMenu.closeMenu();
       solve.selected = !solve.selected;
-      if ( solve.selected ) {
-        this.selected += 1;
-      } else {
-        this.selected -= 1;
-      }
+      this.selected += (solve.selected) ? 1 : -1;
     }
+  }
+
+  handleClick(s: Solve) {
+    if ( performance.now() - LAST_CLICK < 200 || this.selected ) {
+      this.solveClick(s, true);
+    } else {
+      setTimeout(() => performance.now() - LAST_CLICK >= 200 && this.editSolve(s), 200);
+    }
+    LAST_CLICK = performance.now();
   }
 
   selectAll() {
@@ -708,6 +750,10 @@ export class TimerComponent implements OnInit, OnDestroy {
     this.reset();
   }
 
+  copyToClipboard() {
+    navigator.clipboard.writeText(this.scramble);
+  }
+
   private openDialog(type: string, data: any, handler) {
     const dialogRef = this.dialog.open(DialogComponent, {
       data: {
@@ -748,10 +794,7 @@ export class TimerComponent implements OnInit, OnDestroy {
   oldScrambles() {
     this.openDialog('old-scrambles', this.solves, (s: Solve) => {
       if ( s ) {
-        this.group = s.group || 0;
-        let menu = MENU[ this.group ];
-        this.mode = ( typeof s.group != 'undefined' ) ? menu[1].filter(m => m[1] === s.mode)[0] : menu[1][0];
-        this.prob = s.prob;
+        this.setConfigFromSolve(s);
         this.initScrambler(s.scramble);
       }
     });
@@ -763,6 +806,43 @@ export class TimerComponent implements OnInit, OnDestroy {
         this.session = this.sessions[0];
       }
     });
+  }
+
+  settings() {
+    this.openDialog('settings', {
+      hasInspection: this.hasInspection,
+      inspection: this.inspectionTime,
+      showElapsedTime: this.showTime,
+      calcAoX: this.calcAoX
+    }, (data) => {
+      if ( data ) {
+        this.hasInspection = data.hasInspection;
+        this.inspectionTime = data.inspection * 1000;
+        this.showTime = data.showElapsedTime;
+
+        if ( this.calcAoX != data.calcAoX ) {
+          this.calcAoX = data.calcAoX;       
+          this.updateStatistics(false);
+        } else {
+          this.calcAoX = data.calcAoX;
+        }
+      }
+    });
+  }
+
+  deleteAll() {
+    this.openDialog('delete-all', this.solves, (data) => {
+      if ( data ) {
+        this.delete(this.solves);
+      }
+    });
+  }
+
+  setConfigFromSolve(s: Solve) {
+    this.group = s.group || 0;
+    let menu = MENU[ this.group ];
+    this.mode = ( typeof s.group != 'undefined' ) ? menu[1].filter(m => m[1] === s.mode)[0] : menu[1][0];
+    this.prob = s.prob;
   }
 
   selectedSession() {
@@ -845,14 +925,30 @@ export class TimerComponent implements OnInit, OnDestroy {
     if ( event.code === 'Space' ) {
       if ( this.state === TimerState.PREVENTION ) {
         if ( this.ready ) {
-          debug('INSPECTION');
           this.createNewSolve();
-          this.state = TimerState.INSPECTION;
-          this.decimals = false;
-          this.time = 0;
-          this.ready = false;
-          this.ref = performance.now() + this.inspectionTime;
-          this.runTimer(-1, true);
+          
+          if ( this.hasInspection ) {
+            debug('INSPECTION');
+            this.state = TimerState.INSPECTION;
+            this.decimals = false;
+            this.time = 0;
+            this.ready = false;
+            this.ref = performance.now() + this.inspectionTime;
+            this.runTimer(-1, true);
+          } else {
+            debug('RUNNING');
+            this.state = TimerState.RUNNING;
+            this.ready = false;
+            this.ref = performance.now();
+            this.decimals = true;
+            this.stopTimer();
+
+            if ( this.lastSolve.penalty === Penalty.P2 ) {
+              this.ref -= 2000;
+            }
+
+            this.runTimer(1);
+          }
         } else {
           debug("CLEAN");
           this.state = TimerState.CLEAN;

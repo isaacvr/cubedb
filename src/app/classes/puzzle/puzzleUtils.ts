@@ -149,9 +149,10 @@ export function roundCorners(
       s[j].oColor = 'd';
       s[j].vecs.length = 0;
 
-      pc.stickers.push(newSt);
+      pc.stickers.push( newSt );
 
       newSt._generator = s[j];
+      s[j]._generated = newSt;
     }
 
   }
@@ -175,4 +176,15 @@ export function assignVectors(p: PuzzleInterface) {
       }
     }
   }
+}
+
+export function random(a) {
+  if ( Array.isArray(a) || typeof a === 'string' ) {
+    return a[ ~~(Math.random() * a.length) ];
+  } else if ( typeof a === 'object' ) {
+    let k = Object.keys(a);
+    return a[ k[~~(Math.random() * k.length) ] ];
+  }
+
+  return ~~(Math.random() * a);
 }

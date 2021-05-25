@@ -208,19 +208,19 @@ export class AlgorithmsComponent implements OnDestroy {
       }
     }
     
-    let idx = 0;
-    
-    let subs = generateCubeBundle(cubes).subscribe({
-      next: (img) => {
-        if ( this.type < 2 ) {          
-          this.cards[idx].cube = <string>img;
-          this.cards[idx].ready = true;
+    let subs = generateCubeBundle(cubes, null, true).subscribe({
+      next: (imgs: string[]) => {
+        if ( this.type < 2 ) {
+          for (let i = 0, maxi = imgs.length; i < maxi; i += 1) {
+            this.cards[i].cube = imgs[i];
+            this.cards[i].ready = true;
+          }
         } else {
-          this.cases[idx].cube = <string>img;
-          this.cases[idx].ready = true;
+          for (let i = 0, maxi = imgs.length; i < maxi; i += 1) {
+            this.cases[i].cube = imgs[i];
+            this.cases[i].ready = true;
+          }
         }
-
-        idx += 1;
       },
       complete: () => { subs.unsubscribe(); },
       error: () => { subs.unsubscribe(); },

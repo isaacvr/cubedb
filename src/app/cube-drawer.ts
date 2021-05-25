@@ -252,11 +252,11 @@ function projectedView(cube: Puzzle, DIM: number): string {
   canvas.height = H;
   ctx.lineWidth = LW;
 
-  let colorFilter = [ 'd' ];
+  let colorFilter = [ 'x', 'd' ];
   
-  if ( cube.type === 'square1' ) {
-    colorFilter.push('x');
-  }
+  // if ( cube.type === 'square1' || cube.type === 'rubik' ) {
+  //   colorFilter.push('x');
+  // }
 
   let stickers = cube.getAllStickers().filter(s => colorFilter.indexOf(s.color) === -1);
 
@@ -302,14 +302,13 @@ function projectedView(cube: Puzzle, DIM: number): string {
 
     for (let i = 0; i < 5; i += 1) {
       fcTr.push([
-        ac[i], ac[ (i + 1) % 5 ].sub(ac[i]), FACE_ANG - PI, UP, 0
+        ac[i % 5], ac[ (i + 1) % 5 ].sub(ac[i % 5]), FACE_ANG - PI, UP, 0
       ]);
-    }  
+    }
 
-    for (let i = 0; i < 5; i += 1) {
+    for (let i = 0; i < 6; i += 1) {
       fcTr.push([ CENTER, UP, 0, UP, 0 ]);
     }
-    fcTr.push([ CENTER, UP, 0, UP, 0 ]);
   }
 
   for (let i = 0, maxi = faceName.length; i < maxi; i += 1) {
@@ -413,10 +412,10 @@ function projectedView(cube: Puzzle, DIM: number): string {
     let r = R - D;
 
     let ac1 = cube.p.pieces.find(p => {
-      let st = p.stickers.filter(s => s.color != 'd');
-      return st.length === 1 && st[0].getOrientation().sub(DOWN).abs() < 1e-6;
+      let st = p.stickers.filter(s => s.points.length === 5);
+      // console.log("ST: ", st);
+      return st.length === 2 && st[0].getOrientation().sub(DOWN).abs() < 1e-6;
     }).stickers[0].add(UP).mul(R / r).add(DOWN).points;
-
 
     let pts1 = [];
     let pts2 = [];
@@ -450,8 +449,8 @@ function projectedView(cube: Puzzle, DIM: number): string {
     let vec = pts1[5].sub(pts2[0]);
     vec.y *= -1;
     vec.z = 0;
-    for (let i = 6; i < 12; i += 1) {
-      sideStk[ faceName[i] ] = sideStk[ faceName[i] ].map(s => s.add(vec));
+    for (let j = 6; j < 12; j += 1) {
+      sideStk[ faceName[j] ] = sideStk[ faceName[j] ].map(s => s.add(vec));
     }
   }
 

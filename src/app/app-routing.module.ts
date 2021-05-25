@@ -10,8 +10,18 @@ import { HomeComponent } from './components/home/home.component';
 import { PllTrainerComponent } from './components/pll-trainer/pll-trainer.component';
 import { IterativePuzzleComponent } from './components/iterative-puzzle/iterative-puzzle.component';
 
-export function matcher(url) {
+export function matcherAlgorithms(url) {
   if ( url.length >= 1 && url[0].path.match(/^algorithms$/) ) {
+    return {
+      consumed: url,
+    }
+  }
+
+  return null;
+}
+
+export function matcherSimulator(url) {
+  if ( url.length >= 1 && url[0].path.match(/^simulator$/) ) {
     return {
       consumed: url,
     }
@@ -26,7 +36,7 @@ const routes: Routes = [
     component: HomeComponent
   },
   {
-    matcher,
+    matcher: matcherAlgorithms,
     component: AlgorithmsComponent
   },
   {
@@ -58,9 +68,13 @@ const routes: Routes = [
     component: ImportExportComponent
   },
   {
-    path: 'simulator',
+    matcher: matcherSimulator,
     component: IterativePuzzleComponent
-  }
+  },
+  // {
+  //   path: 'simulator',
+  //   component: IterativePuzzleComponent
+  // }
 ];
 
 @NgModule({

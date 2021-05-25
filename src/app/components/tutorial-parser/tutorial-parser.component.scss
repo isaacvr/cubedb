@@ -1,23 +1,54 @@
+@import '../../../styleVariables.scss';
+
 ::ng-deep {
   .mat-tooltip {
     font-size: 0.9em;
   }
 }
 
-h1 {
+h1, h2 {
   margin: 0px;
 }
 
-.container-mini:last-child {
-  margin-bottom: 50px;
+.container-mini {
+  margin-top: 0;
+  position: relative;
+
+  &:first-child {
+    margin-top: 30px;
+  }
+
+  &:last-child {
+    margin-bottom: 50px;
+  }
 }
 
 .puzzle-img-mini, mat-icon {
   vertical-align: middle;
 }
 
-mat-icon {
-  width: 35px;
-  height: 35px;
-  cursor: pointer;
+.plus {
+  width: 100%;
+  text-align: center;
+
+  mat-icon {
+    margin: 10px 0px;
+    background: #{$light};
+    border-radius: 50%;
+    box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+  }
+}
+
+.options {
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  
+  mat-icon {
+    color: #{$text-dark};
+    margin: 12px 5px;
+    cursor: pointer;
+    display: inline-block;
+  }
 }

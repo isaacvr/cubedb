@@ -45,13 +45,35 @@ ipcMain.on('cards', (event) => {
 });
 
 /// Tutorials handler
-ipcMain.on('tutorials', (event) => {
-  Tutorials.find({}, (err, list) => {
-    if ( err ) {
-      console.log('Tutorials Get ERROR: ', err);
-      return event.sender.send('tutorials', []);
+ipcMain.on('get-tutorials', (event) => {
+  Tutorials.find({}, (err, tutorials) => {
+    return event.sender.send('tutorial', ['get-tutorials', err ? null : tutorials]);
+  });
+});
+
+ipcMain.on('add-tutorial', (event, arg) => {
+  Tutorials.insert(arg, function(err, tutorial) {
+    return event.sender.send('tutorial', [ 'add-tutorial', err ? null: tutorial ]);
+  });
+});
+
+ipcMain.on('remove-tutorial', (event, arg) => {
+  Tutorials.remove({ _id: arg._id }, function(err, tutorial) {
+    return event.sender.send('tutorial', [ 'remove-tutorial', err ? null : tutorial ]);
+  });
+});
+
+ipcMain.on('update-tutorial', (event, arg) => {
+  Tutorials.update({ _id: arg._id }, {
+    $set: {
+      title: arg.title,
+      titleLower: arg.titleLower,
+      puzzle: arg.puzzle,
+      algs: arg.algs,
+      content: arg.content
     }
-    return event.sender.send('tutorials', list);
+  }, function(err) {
+    return event.sender.send('tutorial', [ 'update-tutorial', err ? null : arg ]);
   });
 });
 

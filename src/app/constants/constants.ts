@@ -2,6 +2,25 @@ export enum CubeMode {
   NORMAL = 0, OLL, PLL, CMLL, F2L, COLL, WV, ELL, VLS, ZBLL, OLLCP, GRAY, CENTERS, CROSS, FL, YCROSS
 };
 
+export const CubeModeMap = [
+  [ 'Normal', CubeMode.NORMAL ],
+  [ 'OLL', CubeMode.OLL ],
+  [ 'PLL', CubeMode.PLL ],
+  [ 'CMLL', CubeMode.CMLL ],
+  [ 'F2L', CubeMode.F2L ],
+  [ 'COLL', CubeMode.COLL ],
+  [ 'WV', CubeMode.WV ],
+  [ 'ELL', CubeMode.ELL ],
+  [ 'VLS', CubeMode.VLS ],
+  [ 'ZBLL', CubeMode.ZBLL ],
+  [ 'OLLCP', CubeMode.OLLCP ],
+  [ 'Gray', CubeMode.GRAY ],
+  [ 'Centers', CubeMode.CENTERS ],
+  [ 'Cross', CubeMode.CROSS ],
+  [ 'First Layer', CubeMode.FL ],
+  [ 'Yellow Cross', CubeMode.YCROSS ],
+];
+
 // export declare type ColorName = 'green' | 'red' | 'blue' | 'orange' | 'yellow' | 'white' | 'gray' | 'black';
 export declare type ColorName = string;
 

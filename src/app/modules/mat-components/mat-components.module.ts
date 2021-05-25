@@ -21,6 +21,9 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatStepperModule } from '@angular/material/stepper';
+import { MatSliderModule } from '@angular/material/slider';
+import { MatRippleModule } from '@angular/material/core';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @NgModule({
   exports: [
@@ -46,6 +49,9 @@ import { MatStepperModule } from '@angular/material/stepper';
     MatProgressBarModule,
     MatDividerModule,
     MatStepperModule,
+    MatSliderModule,
+    MatRippleModule,
+    MatSlideToggleModule,
   ]
 })
 export class MatComponentsModule { }
