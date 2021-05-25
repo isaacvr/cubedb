@@ -1,15 +1,49 @@
-<div class="container-mini"><h1>{{title}}</h1></div>
-<div class="container-mini" *ngFor="let block of blocks">
-  <ng-container *ngIf="block.type === 'text'">
-    <div [innerHTML]="block.content"></div>
-  </ng-container>
-  <ng-container *ngIf="block.type === 'subtitle'">
-    <h2>{{block.content}}</h2>
-  </ng-container>
-  <ng-container *ngIf="block.type === 'cubes'">
-    <ng-container *ngFor="let cb of block.cubes">
-      <img *ngIf="cb.type != 'arrow'" class="puzzle-img-mini" [src]="cb.img || ''">
-      <mat-icon [matTooltip]="cb.text" matTooltipHideDelay="100" *ngIf="cb.type == 'arrow'" svgIcon="arrow-right-thick"></mat-icon>
-    </ng-container>
-  </ng-container>
+<div class="container">
+  <button *ngIf="blocks.length == 0" mat-stroked-button (click)="beginAdd(0)">
+    <mat-icon svgIcon="plus"></mat-icon> Add block</button>
+  <button mat-stroked-button (click)="saveTutorial()">
+    <mat-icon svgIcon="content-save"></mat-icon> Save tutorial</button>
 </div>
+<ng-container *ngFor="let block of blocks; index as i">
+  <div class="container-mini">
+    <ng-container *ngIf="block.type === 'title'">
+      <h1>{{block.content}}</h1>
+    </ng-container>
+    <ng-container *ngIf="block.type === 'text'">
+      <div [innerHTML]="block.content"></div>
+    </ng-container>
+    <ng-container *ngIf="block.type === 'subtitle'">
+      <h2>{{block.content}}</h2>
+    </ng-container>
+    <ng-container *ngIf="block.type === 'cubes'">
+      <ng-container *ngFor="let cb of block.cubes">
+        <img *ngIf="cb.type != 'arrow'" class="puzzle-img-mini" [src]="cb.img || ''">
+        <mat-icon
+          [matTooltip]="cb.text" matTooltipHideDelay="100"
+          *ngIf="cb.type == 'arrow'" svgIcon="arrow-right-thick"></mat-icon>
+      </ng-container>
+    </ng-container>
+    <div class="options">
+      <mat-icon
+        *ngIf="i > 0"
+        (click)="swapBlocks(i, i-1)"
+        matTooltipPosition="above" matTooltip="Move up" matTooltipHideDelay="100"
+        matSuffix svgIcon="arrow-up"></mat-icon>
+      <mat-icon
+        *ngIf="i + 1 < blocks.length"
+        (click)="swapBlocks(i, i+1)"
+        matTooltipPosition="above" matTooltip="Move down" matTooltipHideDelay="100"
+        matSuffix svgIcon="arrow-down"></mat-icon>
+      <mat-icon
+        matTooltipPosition="above" matTooltip="Edit" matTooltipHideDelay="100"
+        matSuffix svgIcon="pencil-outline"></mat-icon>
+      <mat-icon
+        (click)="deleteBlock(i)"
+        matTooltipPosition="above" matTooltip="Delete" matTooltipHideDelay="100"
+        matSuffix svgIcon="delete"></mat-icon>  
+    </div>
+  </div>
+  <div class="plus">
+    <mat-icon (click)="beginAdd(i+1)" svgIcon="plus"></mat-icon>
+  </div>
+</ng-container>

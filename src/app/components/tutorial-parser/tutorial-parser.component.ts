@@ -5,14 +5,10 @@ import { Router } from '@angular/router';
 import { CubeMode } from './../../constants/constants';
 import { Puzzle } from './../../classes/puzzle/puzzle';
 import { Component, OnDestroy } from '@angular/core';
-
-declare type CubeType = Puzzle | { type: 'arrow', text: string } | { tp: 'arrow', tx: string };
-
-interface BlockType {
-  type: "title" | "text" | "cubes";
-  content ?: string;
-  cubes?: CubeType[];
-}
+import { BlockType, Tutorial } from 'app/interfaces/interfaces';
+import { DialogComponent } from '../dialog/dialog.component';
+import { MatDialog } from '@angular/material/dialog';
+import { CubeType } from './../../interfaces/interfaces';
 
 @Component({
   selector: 'app-tutorial-parser',
@@ -20,24 +16,30 @@ interface BlockType {
   styleUrls: ['./tutorial-parser.component.scss']
 })
 export class TutorialParserComponent implements OnDestroy {
-  title: string;
   blocks: BlockType[];
   _id: string;
   sub: Subscription;
-  constructor(private dataService: DataService, private router: Router) {
+  tut: Tutorial;
+  constructor(private dataService: DataService, private router: Router, public dialog: MatDialog) {
 
-    this.title = '';
     this.blocks = [];
 
     let url = decodeURIComponent( this.router.url );
-    this.title = url.split('?')[0].split('/').pop();
     this._id = url.split("=")[1];
+    this.tut = null;
     
     this.sub = this.dataService.tutSub.subscribe({
       next: (list) => {
-        let current = list.find(t => t._id == this._id);
-        if ( current ) {
-          this.init( current.content );
+        let type = list[0];
+        let content = <Tutorial[]>list[1];
+
+        if ( type === 'get-tutorials' ) {
+          let current = content.find(t => t._id == this._id);
+          if ( current ) {
+            this.tut = current;
+            this.tut.content = this.tut.content || [];
+            this.init( this.tut.content );
+          }
         }
       }
     });
@@ -51,36 +53,30 @@ export class TutorialParserComponent implements OnDestroy {
   }
 
   init(sheet: any) {
-    // let arr = <any[]>JSON.parse(sheet);
-    let arr = sheet;
+    console.log("SHEET: ", sheet);
 
-    this.blocks = [];
-    let pos = [];
+    this.blocks.length = 0;
     let allCubes: Puzzle[] = [];
 
-    for (let i = 0, l = 0, maxi = arr.length; i < maxi; i += 1) {
-      switch( (arr[i].type || arr[i].t ) ) {
+    for (let i = 0, maxi = sheet.length; i < maxi; i += 1) {
+      switch( (sheet[i].type || sheet[i].t ) ) {
         case "tl":
-        case "title": {
-          this.title = (arr[i].content || arr[i].c);
-          break;
-        }
+        case "title":
         case "s":
         case "tx":
         case "subtitle":
         case "text": {
           this.blocks.push({
-            type: (arr[i].type || arr[i].t),
-            content: (arr[i].content || arr[i].c),
+            type: (sheet[i].type || sheet[i].t),
+            content: (sheet[i].content || sheet[i].c).replace(/\n/g, '<br>'),
             cubes: []
           });
-          l += 1;
           break;
         }
         case "c":
         case "cubes": {
           let cubes: CubeType[] = [];
-          let content = arr[i].content || arr[i].c;
+          let content = sheet[i].cubes;
           for (let j = 0, maxj = content.length; j < maxj; j += 1) {
             let cnt = content[j];
             switch( (cnt.type || cnt.t ) ) {
@@ -94,7 +90,6 @@ export class TutorialParserComponent implements OnDestroy {
                   cp.rotation = cp.p.rotation;
                   cubes.push(cp);
                   allCubes.push(cp);
-                  pos.push([l, j]);
                 }
                 break;
               }
@@ -106,17 +101,16 @@ export class TutorialParserComponent implements OnDestroy {
                 break;
               }
               default: {
-                let p = Puzzle.fromSequence((cnt.scramble || cnt.s), {
+                let p = Puzzle.fromSequence((cnt.scramble || cnt.s || ""), {
                   type: (cnt.type || cnt.t),
-                  order: [cnt.order],
-                  mode: CubeMode[ <string> cnt.mode ],
+                  order: (Array.isArray(cnt.order)) ? cnt.order : [cnt.order],
+                  mode: ( typeof cnt.mode === 'number' ) ? cnt.mode : CubeMode[ <string> cnt.mode ],
                   tips: cnt.tips || [],
                   view: cnt.view,
                 });
                 p.rotation = cnt.rotation || cnt.r || p.rotation;
                 cubes.push(p);
                 allCubes.push(p);
-                pos.push([l, j]);
               }
             }
           }
@@ -125,7 +119,6 @@ export class TutorialParserComponent implements OnDestroy {
             type: 'cubes',
             cubes,
           });
-          l += 1;
           break;
         }
       }
@@ -134,5 +127,62 @@ export class TutorialParserComponent implements OnDestroy {
     let subs = generateCubeBundle(allCubes, 150, false, true).subscribe({
       complete: () => { subs.unsubscribe(); }
     });
+  }
+
+  private openDialog(type: string, data: any, handler) {
+    const dialogRef = this.dialog.open(DialogComponent, {
+      data: {
+        type,
+        data
+      }
+    });
+
+    const subscr = dialogRef.afterClosed().subscribe((data) => {
+      document.documentElement.style.setProperty('--panel-height', '');
+      document.documentElement.style.setProperty('--panel-padding', '24px');
+      subscr.unsubscribe();
+      handler(data);
+    });
+  }
+
+  beginAdd(pos: number) {
+    this.openDialog('add-block', null, (data) => {
+      console.log("ADD-BLOCK: ", pos, data);
+      if ( data ) {
+        data.content.type = ['title', 'subtitle', 'text', 'cubes'][ data.tab ];
+        let title = this.tut.content.find(b => b.type === 'title');
+
+        if ( data.content.type === 'cubes' ) {
+          data.content.cubes.forEach(c => {
+            if ( c.type != 'arrow' ) {
+              c.rotation.x = c.rotation.x * Math.PI / 180;
+              c.rotation.y = c.rotation.y * Math.PI / 180;
+              c.rotation.z = c.rotation.z * Math.PI / 180;
+            }
+          })
+        }
+
+        if ( !(data.tab === 0 && title) ) {
+          this.tut.content.splice(pos, 0, data.content);
+          this.init(this.tut.content);
+        }
+      }
+    });
+  }
+
+  swapBlocks(i: number, j: number) {
+    let bi = this.blocks[i];
+    this.blocks.splice(i, 1, this.blocks[j]);
+    this.blocks.splice(j, 1, bi);
+  }
+
+  deleteBlock(i: number) {
+    this.blocks.splice(i, 1);
+  }
+
+  saveTutorial() {
+    if ( this.tut ) {
+      this.dataService.saveTutorial(this.tut);
+    }
   }
 }

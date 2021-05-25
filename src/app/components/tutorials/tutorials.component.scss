@@ -19,3 +19,8 @@ mat-card {
     color: #{$text-dark};
   }
 }
+
+button {
+  color: #{$text-dark};
+  background: #{$accent};
+}

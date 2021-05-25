@@ -98,12 +98,18 @@ mat-form-field {
   mat-progress-bar {
     margin-top: 10px;
   }
+}
 
+.options {
+  position: absolute;
+  top: 0;
+  right: 50px;
+  
   mat-icon {
     color: #{$text-dark};
-    vertical-align: top;
-    margin: 0px 5px;
-    cursor: pointer;  
+    margin: 12px 5px;
+    cursor: pointer;
+    display: block;
   }
 }
 
@@ -415,4 +421,10 @@ input {
     opacity: 0;
     pointer-events: none;
   }
+}
+
+.container-ripple {
+  font-size: inherit;
+  width: 100%;
+  height: 100%;
 }

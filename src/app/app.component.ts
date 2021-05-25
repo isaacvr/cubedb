@@ -12,10 +12,21 @@ import { Vector3D } from './classes/vector3d';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements AfterViewInit {
-  constructor(private theme: ThemeService) {}
+  cube: Puzzle;
+  constructor(private theme: ThemeService) {
+    // this.cube = new Puzzle({
+    //   type: 'megaminx',
+    //   order: [3],
+    //   view: '2d'
+    // });
+
+    // let sub = generateCubeBundle([this.cube], 500, null, true).subscribe({
+    //   next: () => { sub.unsubscribe(); }
+    // });
+  }
 
   ngAfterViewInit() {
     this.theme.initialize();
-    this.theme.setTheme('default');
+    // this.theme.setTheme('dark');
   }
 }

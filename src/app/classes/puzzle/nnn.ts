@@ -4,7 +4,7 @@ import { PuzzleInterface } from './../../interfaces/interfaces';
 import { STANDARD_PALETTE } from "../../constants/constants";
 import { Piece } from './Piece';
 import { Sticker } from './Sticker';
-import { assignColors, getAllStickers, roundCorners } from './puzzleUtils';
+import { assignColors, getAllStickers, roundCorners, random } from './puzzleUtils';
 import { Vector3 } from 'three';
 
 export function RUBIK(a: number, b?:number, c?:number): PuzzleInterface {
@@ -102,9 +102,9 @@ export function RUBIK(a: number, b?:number, c?:number): PuzzleInterface {
   rubik.move = function(moves: any[]) {
     for (let m = 0, maxm = moves.length; m < maxm; m += 1) {
       let mv = moves[m];
-      let moveId = MOVE_MAP.indexOf( mv[2] );
-      let layers = mv[1] === a ? mv[1] + 1 : mv[1];
-      let turns = mv[3];
+      let moveId = MOVE_MAP.indexOf( mv[1] );
+      let layers = mv[0] === a ? mv[0] + 1 : mv[0];
+      let turns = mv[2];
       const pts1 = planes[moveId];
       const u = Vector3D.cross(pts1[0], pts1[1], pts1[2]).unit();
       const mu = u.mul(-1);
@@ -142,6 +142,17 @@ export function RUBIK(a: number, b?:number, c?:number): PuzzleInterface {
       pieces: toMovePieces,
       ang: PI_2
     };
+  };
+
+  rubik.scramble = function() {
+    const MOVES = 100;
+    let mv = [];
+
+    for (let i = 0; i < MOVES; i += 1) {
+      mv.push([ random(a - 1) + 1, random(MOVE_MAP), random(3) + 1 ]);
+    }
+
+    rubik.move(mv);
   };
 
   rubik.rotation = {

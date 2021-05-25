@@ -112,8 +112,9 @@ export class Puzzle {
       })[0].stickers.filter(s => s.oColor != 'x' && s.oColor != 'd')[0];
     } else {
       topCenter = pieces.filter(
-        p => p.length === 1 && p.stickers[0].getOrientation().sub(UP).abs() < 1e-6
-      )[0].stickers[0];
+        p => p.length === 2 && p.stickers[0].getOrientation().sub(UP).abs() < 1e-6
+
+        )[0].stickers[0];
     }
 
     let TOP_COLOR = topCenter.oColor;
@@ -353,7 +354,6 @@ export class Puzzle {
     } else if ( this.type === 'megaminx' ) {
       moves = ScrambleParser.parseMegaminx(seq);
     } else {
-      console.log('INVALID TYPE: ', this.type);
       return;
     }
     

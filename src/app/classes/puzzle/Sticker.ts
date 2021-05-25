@@ -5,6 +5,7 @@ export class Sticker {
   color: string;
   oColor: string;
   _generator: Sticker;
+  _generated: Sticker;
   vecs: Vector3D[];
   boundingBox: Vector3D[];
 
@@ -17,6 +18,7 @@ export class Sticker {
     this.updateMassCenter();
     this.computeBoundingBox();
     this._generator = this;
+    this._generated = this;
     this.vecs = (vecs || []).map(v => v.clone());
   }
 

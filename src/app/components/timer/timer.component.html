@@ -45,108 +45,140 @@
       <ng-template mat-tab-label>
         <mat-icon svgIcon="timer"></mat-icon>
       </ng-template>
-      <div class="scramble">
-        <span *ngIf="!scramble">
-          {{stateMessage}}
-          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        </span>
-        <span [innerHTML]="scramble">
-        </span>
-        <mat-icon matTooltip="Reload" matTooltipHideDelay="100" (click)="initScrambler()" matSuffix svgIcon="refresh"></mat-icon>
-        <mat-icon matTooltip="Edit" (click)="editScramble()" matTooltipHideDelay="100" matSuffix svgIcon="pencil-outline"></mat-icon>
-        <mat-icon *ngIf="solves.length > 0" matTooltip="Use old scramble" (click)="oldScrambles()" matTooltipHideDelay="100" matSuffix svgIcon="calendar-text-outline"></mat-icon>
-      </div>
-      <div class="clock">
-        <span
-          class="timer"
-          [class.prevention]="state === 2"
-          [class.ready]="ready">{{time | timer:decimals:false}}</span>
-        <div class="solve-control" *ngIf="state === 1" [class.show]="state === 1">
-          <mat-icon (click)="delete([lastSolve])" matTooltip="Delete" matTooltipHideDelay="100" svgIcon="close"></mat-icon>
-          <mat-icon [class.highlight]="lastSolve.penalty === 2" (click)="dnf()"  matTooltip="DNF" matTooltipHideDelay="100" svgIcon="thumb-down"></mat-icon>
-          <mat-icon [class.highlight]="lastSolve.penalty === 1" (click)="plus2()" matTooltip="+2" matTooltipHideDelay="100" svgIcon="flag-outline"></mat-icon>
-          <mat-icon (click)="editSolve(lastSolve)" matTooltip="Comment" matTooltipHideDelay="100" svgIcon="comment-plus-outline"></mat-icon>
+      <div class="container-ripple" matRipple matRippleColor="transparent">
+        <div class="scramble">
+          <span *ngIf="!scramble">
+            {{stateMessage}}
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          </span>
+          <span [innerHTML]="scramble">
+          </span>
+          <div class="options">
+            <mat-icon
+              matTooltipPosition="left" matTooltip="Reload" matTooltipHideDelay="100"
+              (click)="initScrambler()" matSuffix svgIcon="refresh"></mat-icon>
+            <mat-icon
+              matTooltipPosition="left" matTooltip="Edit" matTooltipHideDelay="100"
+              (click)="editScramble()" matSuffix svgIcon="pencil-outline"></mat-icon>
+            <mat-icon
+              *ngIf="solves.length > 0"
+              matTooltipPosition="left" matTooltip="Use old scramble" matTooltipHideDelay="100"
+              (click)="oldScrambles()" matSuffix svgIcon="calendar-text-outline"></mat-icon>
+            <mat-icon
+              matTooltipPosition="left" matTooltip="Copy scramble" matTooltipHideDelay="100"
+              (click)="copyToClipboard()" matSuffix svgIcon="content-copy"></mat-icon>
+            <mat-icon
+              matTooltipPosition="left" matTooltip="Settings" matTooltipHideDelay="100"
+              (click)="settings()" matSuffix svgIcon="settings"></mat-icon>  
+          </div>
         </div>
-      </div>
-      <div class="cross-hint" [class.isVisible]="hintDialog && state <= 2">
-        <table [class.nshow]="!hint">
-          <tr><td>Cross</td> <td>{{cross}}</td></tr>
-          <tr><td>XCross</td> <td>{{xcross}}</td></tr>
-          <tr *ngIf="Ao5"><td>Next Ao5</td> <td>Between {{Ao5[0] | timer:false:true}} and {{Ao5[1] | timer:false:true}}</td></tr>
-        </table>
-        <mat-icon matSuffix [class.nshow]="!hint" svgIcon="lightbulb-on" (click)="hint = !hint"></mat-icon>
-      </div>
-      <div class="statistics" [class.isVisible]="state <= 2">
-        <div class="left">
-          <table>
-            <tr [class.better]="stats.best.better && stats.__counter > 0 && stats.best.value > -1">
-              <td>Best:</td>
-              <td *ngIf="!stats.best.value">N/A</td>
-              <td *ngIf="stats.best.value">{{ stats.best.value | timer : false : true }}</td>
-            </tr>
-            <tr>
-              <td>Worst:</td>
-              <td *ngIf="!stats.worst.value">N/A</td>
-              <td *ngIf="stats.worst.value">{{ stats.worst.value | timer : false : true }}</td>
-            </tr>
-            <tr [class.better]="stats.avg.better && stats.__counter > 0">
-              <td>Avg:</td>
-              <td *ngIf="!stats.avg.value">N/A</td>
-              <td *ngIf="stats.avg.value">{{ stats.avg.value | timer : false : true }}</td>
-            </tr>
-            <tr>
-              <td>Count:</td>
-              <td>{{ stats.count.value }}</td>
-            </tr>
-            <tr [class.better]="stats.Ao5.better && stats.__counter > 0 && stats.Ao5.value > -1">
-              <td>Ao5:</td>
-              <td *ngIf="!(stats.Ao5.value > -1)">N/A</td>
-              <td *ngIf="(stats.Ao5.value > -1)">{{ stats.Ao5.value | timer : false : true }}</td>
-            </tr>
-            <tr [class.better]="stats.Ao12.better && stats.__counter > 0 && stats.Ao12.value > -1">
-              <td>Ao12:</td>
-              <td *ngIf="!(stats.Ao12.value > -1)">N/A</td>
-              <td *ngIf="(stats.Ao12.value > -1)">{{ stats.Ao12.value | timer : false : true }}</td>
-            </tr>
+        <div class="clock">
+          <span
+            class="timer"
+            [class.prevention]="state === 2"
+            [class.ready]="ready"
+            [hidden]="state === 4 && !showTime"
+            >{{time | timer:decimals:false}}</span>
+          <span
+            class="timer"
+            [hidden]="!(state === 4 && !showTime)">----</span>
+          <div class="solve-control" *ngIf="state === 1" [class.show]="state === 1">
+            <mat-icon (click)="delete([lastSolve])" matTooltip="Delete" matTooltipHideDelay="100" svgIcon="close"></mat-icon>
+            <mat-icon [class.highlight]="lastSolve.penalty === 2" (click)="dnf()"  matTooltip="DNF" matTooltipHideDelay="100" svgIcon="thumb-down"></mat-icon>
+            <mat-icon [class.highlight]="lastSolve.penalty === 1" (click)="plus2()" matTooltip="+2" matTooltipHideDelay="100" svgIcon="flag-outline"></mat-icon>
+            <mat-icon (click)="editSolve(lastSolve)" matTooltip="Comment" matTooltipHideDelay="100" svgIcon="comment-plus-outline"></mat-icon>
+          </div>
+        </div>
+        <div class="cross-hint" [class.isVisible]="hintDialog && state <= 2">
+          <table [class.nshow]="!hint">
+            <tr><td>Cross</td> <td>{{cross}}</td></tr>
+            <tr><td>XCross</td> <td>{{xcross}}</td></tr>
+            <tr *ngIf="Ao5"><td>Next Ao5</td> <td>Between {{Ao5[0] | timer:false:true}} and {{Ao5[1] | timer:false:true}}</td></tr>
           </table>
+          <mat-icon matSuffix [class.nshow]="!hint" svgIcon="lightbulb-on" (click)="hint = !hint"></mat-icon>
         </div>
-        <div class="right">
-          <table>
-            <tr [class.better]="stats.Ao50.better && stats.__counter > 0 && stats.Ao50.value > -1">
-              <td>Ao50:</td>
-              <td *ngIf="!(stats.Ao50.value > -1)">N/A</td>
-              <td *ngIf="(stats.Ao50.value > -1)">{{ stats.Ao50.value | timer : false : true }}</td>
-            </tr>
-            <tr [class.better]="stats.Ao100.better && stats.__counter > 0 && stats.Ao100.value > -1">
-              <td>Ao100:</td>
-              <td *ngIf="!(stats.Ao100.value > -1)">N/A</td>
-              <td *ngIf="(stats.Ao100.value > -1)">{{ stats.Ao100.value | timer : false : true }}</td>
-            </tr>
-            <tr [class.better]="stats.Ao200.better && stats.__counter > 0 && stats.Ao200.value > -1">
-              <td>Ao200:</td>
-              <td *ngIf="!(stats.Ao200.value > -1)">N/A</td>
-              <td *ngIf="(stats.Ao200.value > -1)">{{ stats.Ao200.value | timer : false : true }}</td>
-            </tr>
-            <tr [class.better]="stats.Ao500.better && stats.__counter > 0 && stats.Ao500.value > -1">
-              <td>Ao500:</td>
-              <td *ngIf="!(stats.Ao500.value > -1)">N/A</td>
-              <td *ngIf="(stats.Ao500.value > -1)">{{ stats.Ao500.value | timer : false : true }}</td>
-            </tr>
-            <tr [class.better]="stats.Ao1k.better && stats.__counter > 0 && stats.Ao1k.value > -1">
-              <td>Ao1k:</td>
-              <td *ngIf="!(stats.Ao1k.value > -1)">N/A</td>
-              <td *ngIf="(stats.Ao1k.value > -1)">{{ stats.Ao1k.value | timer : false : true }}</td>
-            </tr>
-            <tr [class.better]="stats.Ao2k.better && stats.__counter > 0 && stats.Ao2k.value > -1">
-              <td>Ao2k:</td>
-              <td *ngIf="!(stats.Ao2k.value > -1)">N/A</td>
-              <td *ngIf="(stats.Ao2k.value > -1)">{{ stats.Ao2k.value | timer : false : true }}</td>
-            </tr>
-          </table>
+        <div class="statistics" [class.isVisible]="state <= 2">
+          <div class="left">
+            <table>
+              <tr [class.better]="stats.best.better && stats.__counter > 0 && stats.best.value > -1">
+                <td>Best:</td>
+                <td *ngIf="!stats.best.value">N/A</td>
+                <td *ngIf="stats.best.value">{{ stats.best.value | timer : false : true }}</td>
+              </tr>
+              <tr>
+                <td>Worst:</td>
+                <td *ngIf="!stats.worst.value">N/A</td>
+                <td *ngIf="stats.worst.value">{{ stats.worst.value | timer : false : true }}</td>
+              </tr>
+              <tr [class.better]="stats.avg.better && stats.__counter > 0">
+                <td>Average:</td>
+                <td *ngIf="!stats.avg.value">N/A</td>
+                <td *ngIf="stats.avg.value">{{ stats.avg.value | timer : false : true }}</td>
+              </tr>
+              <tr>
+                <td>Deviation:</td>
+                <td *ngIf="!stats.dev.value">N/A</td>
+                <td *ngIf="stats.dev.value">{{ stats.dev.value | timer : false : true }}</td>
+              </tr>
+              <tr>
+                <td>Count:</td>
+                <td>{{ stats.count.value }}</td>
+              </tr>
+              <tr [class.better]="stats.Mo3.better && stats.__counter > 0 && stats.Mo3.value > -1">
+                <td>Mo3:</td>
+                <td *ngIf="!(stats.Mo3.value > -1)">N/A</td>
+                <td *ngIf="(stats.Mo3.value > -1)">{{ stats.Mo3.value | timer : false : true }}</td>
+              </tr>
+              <tr [class.better]="stats.Ao5.better && stats.__counter > 0 && stats.Ao5.value > -1">
+                <td>Ao5:</td>
+                <td *ngIf="!(stats.Ao5.value > -1)">N/A</td>
+                <td *ngIf="(stats.Ao5.value > -1)">{{ stats.Ao5.value | timer : false : true }}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="right">
+            <table>
+              <tr [class.better]="stats.Ao12.better && stats.__counter > 0 && stats.Ao12.value > -1">
+                <td>Ao12:</td>
+                <td *ngIf="!(stats.Ao12.value > -1)">N/A</td>
+                <td *ngIf="(stats.Ao12.value > -1)">{{ stats.Ao12.value | timer : false : true }}</td>
+              </tr>
+              <tr [class.better]="stats.Ao50.better && stats.__counter > 0 && stats.Ao50.value > -1">
+                <td>Ao50:</td>
+                <td *ngIf="!(stats.Ao50.value > -1)">N/A</td>
+                <td *ngIf="(stats.Ao50.value > -1)">{{ stats.Ao50.value | timer : false : true }}</td>
+              </tr>
+              <tr [class.better]="stats.Ao100.better && stats.__counter > 0 && stats.Ao100.value > -1">
+                <td>Ao100:</td>
+                <td *ngIf="!(stats.Ao100.value > -1)">N/A</td>
+                <td *ngIf="(stats.Ao100.value > -1)">{{ stats.Ao100.value | timer : false : true }}</td>
+              </tr>
+              <tr [class.better]="stats.Ao200.better && stats.__counter > 0 && stats.Ao200.value > -1">
+                <td>Ao200:</td>
+                <td *ngIf="!(stats.Ao200.value > -1)">N/A</td>
+                <td *ngIf="(stats.Ao200.value > -1)">{{ stats.Ao200.value | timer : false : true }}</td>
+              </tr>
+              <tr [class.better]="stats.Ao500.better && stats.__counter > 0 && stats.Ao500.value > -1">
+                <td>Ao500:</td>
+                <td *ngIf="!(stats.Ao500.value > -1)">N/A</td>
+                <td *ngIf="(stats.Ao500.value > -1)">{{ stats.Ao500.value | timer : false : true }}</td>
+              </tr>
+              <tr [class.better]="stats.Ao1k.better && stats.__counter > 0 && stats.Ao1k.value > -1">
+                <td>Ao1k:</td>
+                <td *ngIf="!(stats.Ao1k.value > -1)">N/A</td>
+                <td *ngIf="(stats.Ao1k.value > -1)">{{ stats.Ao1k.value | timer : false : true }}</td>
+              </tr>
+              <tr [class.better]="stats.Ao2k.better && stats.__counter > 0 && stats.Ao2k.value > -1">
+                <td>Ao2k:</td>
+                <td *ngIf="!(stats.Ao2k.value > -1)">N/A</td>
+                <td *ngIf="(stats.Ao2k.value > -1)">{{ stats.Ao2k.value | timer : false : true }}</td>
+              </tr>
+            </table>
+          </div>
         </div>
-      </div>
-      <div class="preview-container" #prev (click)="prev.classList.toggle('expanded')">
-        <img (dragstart)="false" class="preview" [src]="preview">
+        <div class="preview-container" #prev (click)="prev.classList.toggle('expanded')">
+          <img (dragstart)="false" class="preview" [src]="preview">
+        </div>
       </div>
     </mat-tab>
     <mat-tab>
@@ -154,19 +186,11 @@
         <mat-icon svgIcon="format-list-bulleted"></mat-icon>
       </ng-template>
       <div class="pill-container no-scrollbar">
-        <mat-menu #pillMenu="matMenu" >
-          <ng-template matMenuContent let-solve="solve">
-            <button mat-menu-item (click)="solveClick(solve, true)">Select</button>
-            <button mat-menu-item (click)="editSolve(solve)">Edit</button>
-          </ng-template>
-        </mat-menu>
         <ng-container *ngFor="let solve of solves; index as i">
           <div
             class="solve-pill"
-            (click)="solveClick(solve)"
-            [class.selected]="solve.selected"
-            [matMenuTriggerFor]="pillMenu"
-            [matMenuTriggerData]="{ solve: solve }">
+            (click)="handleClick(solve)"
+            [class.selected]="solve.selected">
             <div class="date">{{ solve.date | date:'dd/MM' }}</div>
             <span *ngIf="solve.penalty === 2" class="dnf">DNF</span>
             <span class="time">{{ solve.time | timer:true }}</span>
@@ -174,6 +198,12 @@
             <mat-icon  *ngIf="solve.comments" class="comment" svgIcon="comment-plus-outline"></mat-icon>
           </div>
         </ng-container>
+      </div>
+      <div class="options">
+        <mat-icon
+          *ngIf="solves.length > 0"
+          matTooltipPosition="left" matTooltip="Delete all" matTooltipHideDelay="100"
+          (click)="deleteAll()" matSuffix svgIcon="delete-sweep-outline"></mat-icon>
       </div>
     </mat-tab>
     <mat-tab>

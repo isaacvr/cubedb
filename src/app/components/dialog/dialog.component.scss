@@ -116,3 +116,20 @@ td:first-child {
 img {
   user-select: none;
 }
+
+.cube-container {
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  margin: 3px;
+  padding: 8px;
+  border-radius: 3px;
+}
+
+mat-panel-title {
+  img {
+    height: 50px;
+  }
+  span {
+    margin-top: 16px;
+  }
+}

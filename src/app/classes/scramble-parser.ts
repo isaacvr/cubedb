@@ -39,9 +39,9 @@ export class ScrambleParser {
     let res = [];
     for (let i = 0, maxi = moves.length; i < maxi; i += 1) {
       if (moves[i][1] > 0) {
-        res.push([1, moves[i][1], MOVE_MAP.charAt(moves[i][0]), [1, 2, -1][moves[i][2] - 1]]);
+        res.push([moves[i][1], MOVE_MAP.charAt(moves[i][0]), [1, 2, -1][moves[i][2] - 1]]);
       } else {
-        res.push([1, order, MOVE_MAP.charAt(moves[i][0]), [1, 2, -1][-moves[i][2] - 1]]);
+        res.push([order, MOVE_MAP.charAt(moves[i][0]), [1, 2, -1][-moves[i][2] - 1]]);
       }
     }
     return res;

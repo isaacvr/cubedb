@@ -4,7 +4,7 @@ import { PuzzleInterface } from './../../interfaces/interfaces';
 import { STANDARD_PALETTE } from "../../constants/constants";
 import { Piece } from './Piece';
 import { Sticker } from './Sticker';
-import { assignColors, getAllStickers, roundCorners } from './puzzleUtils';
+import { assignColors, getAllStickers, random, roundCorners } from './puzzleUtils';
 import { Vector3 } from 'three';
 
 export function MIRROR(n: number): PuzzleInterface {
@@ -174,6 +174,18 @@ export function MIRROR(n: number): PuzzleInterface {
       ang: PI_2
     };
   };
+
+  mirror.scramble = function() {
+    const MOVES = 100;
+    let dirs = [ UP, DOWN, FRONT, BACK, LEFT, RIGHT ];
+
+    for (let i = 0; i < MOVES; i += 1) {
+      let dir = random(dirs);
+      let mv = mirror.toMove( random(pieces), null, dir );
+      let cant = 1 + random(3);
+      mv.pieces.forEach((p: Piece) => p.rotate(mirror.center, dir, mv.ang * cant, true));
+    }
+  }
 
   mirror.rotation = {
     x: PI / 6,

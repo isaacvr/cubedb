@@ -5,7 +5,11 @@ import { Injectable, NgZone } from '@angular/core';
 import { Algorithm, Solve, Session } from '../interfaces/interfaces';
 import { IpcRenderer, BrowserWindow } from 'electron';
 import { HttpClient } from '@angular/common/http';
-// import { records } from './data';
+
+interface TutorialData {
+  0: string;
+  1: Tutorial | Tutorial[];
+}
 
 @Injectable({
   providedIn: 'root'
@@ -15,14 +19,14 @@ export class DataService {
   window: BrowserWindow;
   algSub: Subject< Algorithm[] >;
   cardSub: Subject< RawCard[] >;
-  tutSub: Subject< Tutorial[] >;
+  tutSub: Subject< TutorialData >;
   solveSub: Subject< { type: string, data: Solve[] } >;
   sessSub: Subject< { type: string, data: Session | Session[] } >;
   isElectron: boolean;
   constructor(private http: HttpClient, private ngZone: NgZone) {
     this.algSub = new Subject< Algorithm[] >();
     this.cardSub = new Subject< RawCard[] >();
-    this.tutSub = new Subject< Tutorial[] >();
+    this.tutSub = new Subject< TutorialData >();
     this.solveSub = new Subject< { type: string, data: Solve[] } >();
     this.sessSub = new Subject< { type: string, data: Session[] } >();
 
@@ -51,7 +55,7 @@ export class DataService {
       });
     });
 
-    this.ipc.on('tutorials', (event, tuts) => {
+    this.ipc.on('tutorial', (event, tuts) => {
       this.ngZone.run(() => {
         this.tutSub.next(tuts);
       });
@@ -90,7 +94,15 @@ export class DataService {
   // }
 
   getTutorials() {
-    this.isElectron && this.ipc.send('tutorials');
+    this.isElectron && this.ipc.send('get-tutorials');
+  }
+
+  addTutorial(t: Tutorial) {
+    this.isElectron && this.ipc.send('add-tutorial', t);
+  }
+
+  saveTutorial(t: Tutorial) {
+    this.isElectron && this.ipc.send('update-tutorial', t);
   }
 
   getSolves() {
